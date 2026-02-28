@@ -1,0 +1,97 @@
+---
+title: "Arquitectura del Sistema PetroVision"
+---
+graph TB
+    subgraph PLANTA["🏭 CAPA FÍSICA - Planta Petroquímica"]
+        S1["🌡️ Sensores\nTemperatura\nPT-100/RTD"]
+        S2["📏 Sensores\nPresión\nTransmisores 4-20mA"]
+        S3["💧 Sensores\npH / Conductividad"]
+        S4["🌊 Medidores\nde Caudal\nFlowmeters"]
+        PLC["⚡ PLC / RTU\nControlador Lógico\nProgramable"]
+    end
+
+    subgraph COMM["📡 CAPA DE COMUNICACIÓN"]
+        OPC["🔗 OPC-UA Server\nProtocolo Industrial"]
+        MQTT["📨 MQTT Broker\nMosquitto"]
+        API_GW["🚪 API Gateway\nNginx / Kong"]
+    end
+
+    subgraph BACKEND["🖥️ CAPA DE BACKEND"]
+        API["⚙️ API REST\nPython FastAPI"]
+        WS["🔄 WebSocket Server\nDatos Tiempo Real"]
+        AUTH["🔐 Autenticación\nJWT / OAuth2"]
+        QUEUE["📬 Cola de Mensajes\nRedis / RabbitMQ"]
+    end
+
+    subgraph DATA["🗄️ CAPA DE DATOS"]
+        TSDB["📊 Base de Datos\nTimeSeries\nInfluxDB / TimescaleDB"]
+        RDBMS["🗃️ Base de Datos\nRelacional\nPostgreSQL"]
+        CACHE["⚡ Cache\nRedis"]
+    end
+
+    subgraph ML["🧠 CAPA DE MACHINE LEARNING"]
+        TRAIN["🎯 Motor de\nEntrenamiento\nScikit-learn / TensorFlow"]
+        SERVE["🚀 Modelo en\nProducción\nMLflow / FastAPI"]
+        MONITOR["📈 Monitoreo\nde Modelo\nDrift Detection"]
+    end
+
+    subgraph FRONTEND["💻 CAPA DE PRESENTACIÓN"]
+        DASH["📊 Dashboard\nReact + Recharts"]
+        PRED["🤖 Módulo\nPredictivo"]
+        ALARM["🔔 Panel de\nAlarmas"]
+        HIST["📋 Historial\ny Reportes"]
+    end
+
+    S1 & S2 & S3 & S4 --> PLC
+    PLC --> OPC
+    OPC --> MQTT
+    MQTT --> API_GW
+
+    API_GW --> API
+    API_GW --> WS
+    API --> AUTH
+    API --> QUEUE
+
+    QUEUE --> TSDB
+    API --> RDBMS
+    API --> CACHE
+    WS --> CACHE
+
+    TSDB --> TRAIN
+    RDBMS --> TRAIN
+    TRAIN --> SERVE
+    SERVE --> MONITOR
+    SERVE --> API
+
+    WS --> DASH
+    API --> DASH
+    API --> PRED
+    API --> ALARM
+    API --> HIST
+    SERVE --> PRED
+
+    style PLANTA fill:#0c1225,stroke:#ff9100,color:#e0e6f0
+    style COMM fill:#0c1225,stroke:#00e5ff,color:#e0e6f0
+    style BACKEND fill:#0c1225,stroke:#00e676,color:#e0e6f0
+    style DATA fill:#0c1225,stroke:#d500f9,color:#e0e6f0
+    style ML fill:#0c1225,stroke:#ff1744,color:#e0e6f0
+    style FRONTEND fill:#0c1225,stroke:#00e5ff,color:#e0e6f0
+
+    style PLC fill:#2a1a0a,stroke:#ff9100,color:#e0e6f0
+    style OPC fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style MQTT fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style API_GW fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style API fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style WS fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style AUTH fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style QUEUE fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style TSDB fill:#1a0a2a,stroke:#d500f9,color:#e0e6f0
+    style RDBMS fill:#1a0a2a,stroke:#d500f9,color:#e0e6f0
+    style CACHE fill:#1a0a2a,stroke:#d500f9,color:#e0e6f0
+    style TRAIN fill:#2a0a0a,stroke:#ff1744,color:#e0e6f0
+    style SERVE fill:#2a0a0a,stroke:#ff1744,color:#e0e6f0
+    style MONITOR fill:#2a0a0a,stroke:#ff1744,color:#e0e6f0
+    style DASH fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style PRED fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style ALARM fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style HIST fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0

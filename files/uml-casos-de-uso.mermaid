@@ -1,0 +1,60 @@
+---
+title: "Diagrama de Casos de Uso - Sistema PetroVision"
+---
+graph TB
+    subgraph Sistema["🏭 Sistema PetroVision - SCADA + ML"]
+        UC1["📊 Visualizar Dashboard\nen Tiempo Real"]
+        UC2["⚙️ Configurar Parámetros\nde Proceso"]
+        UC3["🔔 Gestionar Alarmas\ny Notificaciones"]
+        UC4["📈 Consultar\nPredicciones ML"]
+        UC5["📋 Consultar Historial\nde Eventos"]
+        UC6["🔬 Registrar Datos\nde Laboratorio"]
+        UC7["🤖 Reentrenar Modelo\nPredictivo"]
+        UC8["📄 Generar Reportes\nde Producción"]
+        UC9["👤 Gestionar Usuarios\ny Permisos"]
+    end
+
+    OP["🧑‍🔧 Operador\nde Planta"]
+    IQ["🧑‍🔬 Ingeniero\nQuímico"]
+    DS["🧑‍💻 Data Scientist /\nIng. Sistemas"]
+    SUP["👔 Supervisor\nde Producción"]
+    SYS["🖥️ Sistema\nAutomático"]
+
+    OP --> UC1
+    OP --> UC2
+    OP --> UC3
+    OP --> UC5
+
+    IQ --> UC1
+    IQ --> UC4
+    IQ --> UC6
+    IQ --> UC8
+
+    DS --> UC4
+    DS --> UC7
+    DS --> UC9
+
+    SUP --> UC1
+    SUP --> UC4
+    SUP --> UC5
+    SUP --> UC8
+
+    SYS --> UC3
+    SYS --> UC7
+
+    style Sistema fill:#0c1225,stroke:#1a2744,color:#e0e6f0
+    style UC1 fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style UC2 fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style UC3 fill:#2a1a0a,stroke:#ff9100,color:#e0e6f0
+    style UC4 fill:#1a0a2a,stroke:#d500f9,color:#e0e6f0
+    style UC5 fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+    style UC6 fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style UC7 fill:#1a0a2a,stroke:#d500f9,color:#e0e6f0
+    style UC8 fill:#0a2a1a,stroke:#00e676,color:#e0e6f0
+    style UC9 fill:#0a2a3a,stroke:#00e5ff,color:#e0e6f0
+
+    style OP fill:#1a2744,stroke:#00e5ff,color:#e0e6f0
+    style IQ fill:#1a2744,stroke:#00e676,color:#e0e6f0
+    style DS fill:#1a2744,stroke:#d500f9,color:#e0e6f0
+    style SUP fill:#1a2744,stroke:#ff9100,color:#e0e6f0
+    style SYS fill:#1a2744,stroke:#ff1744,color:#e0e6f0

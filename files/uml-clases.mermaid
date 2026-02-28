@@ -1,0 +1,134 @@
+---
+title: "Diagrama de Clases - Modelo de Dominio PetroVision"
+---
+classDiagram
+    class Sensor {
+        +String id
+        +String nombre
+        +String tipo
+        +String unidad
+        +Float rangoMin
+        +Float rangoMax
+        +String ubicacion
+        +Boolean activo
+        +getLectura() Float
+        +calibrar() void
+        +getHistorial(desde, hasta) Lectura[]
+    }
+
+    class Lectura {
+        +String id
+        +DateTime timestamp
+        +Float valor
+        +String sensorId
+        +String calidad
+        +validar() Boolean
+        +esAlarma() Boolean
+    }
+
+    class ProcesoQuimico {
+        +String id
+        +String nombre
+        +String estado
+        +DateTime inicio
+        +DateTime fin
+        +Float temperaturaTarget
+        +Float presionTarget
+        +Float phTarget
+        +iniciar() void
+        +detener() void
+        +getVariables() Map
+    }
+
+    class Lote {
+        +String id
+        +String procesoId
+        +DateTime fechaInicio
+        +DateTime fechaFin
+        +String estado
+        +Float rendimientoReal
+        +Float rendimientoPredicho
+        +Float pureza
+        +registrarResultado() void
+        +getPrediccion() Prediccion
+    }
+
+    class Alarma {
+        +String id
+        +String tipo
+        +String severidad
+        +String mensaje
+        +DateTime timestamp
+        +String sensorId
+        +String zona
+        +Boolean reconocida
+        +reconocer(usuarioId) void
+        +escalar() void
+    }
+
+    class ModeloML {
+        +String id
+        +String version
+        +String algoritmo
+        +Float r2Score
+        +Float mae
+        +DateTime fechaEntrenamiento
+        +String estado
+        +Map hiperparametros
+        +predecir(features) Prediccion
+        +reentrenar(datos) ModeloML
+        +evaluar() Metricas
+    }
+
+    class Prediccion {
+        +String id
+        +String loteId
+        +String modeloId
+        +Float valorPredicho
+        +Float confianza
+        +DateTime timestamp
+        +Map featuresUsados
+        +getError() Float
+    }
+
+    class Usuario {
+        +String id
+        +String nombre
+        +String rol
+        +String email
+        +Boolean activo
+        +autenticar() Token
+        +tienePermiso(accion) Boolean
+    }
+
+    class Dashboard {
+        +String id
+        +String usuarioId
+        +Widget[] widgets
+        +String layout
+        +actualizar() void
+        +exportarReporte() PDF
+    }
+
+    class Reporte {
+        +String id
+        +String tipo
+        +DateTime fechaGeneracion
+        +DateTime periodoInicio
+        +DateTime periodoFin
+        +String formato
+        +generar() File
+        +enviar(email) void
+    }
+
+    Sensor "1" --> "*" Lectura : genera
+    Sensor "*" --> "1" ProcesoQuimico : monitorea
+    ProcesoQuimico "1" --> "*" Lote : produce
+    Lectura "1" --> "0..1" Alarma : dispara
+    Lote "1" --> "1" Prediccion : tiene
+    ModeloML "1" --> "*" Prediccion : genera
+    ModeloML "1" --> "*" Lectura : usa para entrenar
+    Usuario "1" --> "*" Alarma : reconoce
+    Usuario "1" --> "1" Dashboard : configura
+    Dashboard "1" --> "*" Reporte : genera
+    Lote "*" --> "*" Lectura : contiene datos de

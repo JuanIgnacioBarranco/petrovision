@@ -1,0 +1,135 @@
+# ============================================================
+# PetroVision — Docker Compose (Development)
+# Servicios: api, frontend, postgres, influxdb, redis, adminer
+# ============================================================
+# Usage: docker compose up --build
+# ============================================================
+
+services:
+  # ── PostgreSQL (Relational DB) ─────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: petrovision-postgres
+    environment:
+      POSTGRES_USER: petrovision
+      POSTGRES_PASSWORD: petrovision2026
+      POSTGRES_DB: petrovision
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petrovision"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ── InfluxDB (Time-Series DB) ──────────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: petrovision-influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: petrovision
+      DOCKER_INFLUXDB_INIT_PASSWORD: petrovision2026
+      DOCKER_INFLUXDB_INIT_ORG: petrovision
+      DOCKER_INFLUXDB_INIT_BUCKET: process_data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: petrovision-influx-token-2026
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Redis (Cache + Pub/Sub) ────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: petrovision-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Backend API (Python FastAPI) ───────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: petrovision-api
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=petrovision
+      - POSTGRES_PASSWORD=petrovision2026
+      - POSTGRES_DB=petrovision
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=petrovision-influx-token-2026
+      - INFLUXDB_ORG=petrovision
+      - INFLUXDB_BUCKET=process_data
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SECRET_KEY=petrovision-secret-key-change-in-production-2026
+      - DEBUG=true
+      - SIMULATION_ENABLED=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./ml/models:/app/ml/models
+    depends_on:
+      postgres:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Frontend (React + Vite) ────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: petrovision-frontend
+    environment:
+      # API_TARGET is used by Vite proxy (server-side inside container → api service)
+      - API_TARGET=http://api:8000
+      - WS_TARGET=ws://api:8000
+      # VITE_ vars are exposed to browser — empty = use Vite proxy (avoids CORS)
+      - VITE_API_URL=
+      - VITE_WS_URL=
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ── Adminer (DB admin UI) ──────────────────────────────────
+  adminer:
+    image: adminer:4
+    container_name: petrovision-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  influxdb_data:
+  redis_data:

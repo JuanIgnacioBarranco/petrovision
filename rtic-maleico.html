@@ -1,0 +1,3146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RTIC — Anhídrido Maleico | Planta MA-100</title>
+  <style>
+    /* ══════════════════════════════════════════════════════════════════
+       RTIC — SISTEMA DE CONTROL E INFORMACIÓN EN TIEMPO REAL
+       Clon estilo YPF / SCADA Industrial
+       ══════════════════════════════════════════════════════════════════ */
+
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #111827;
+      --bg-panel: #1a1f2e;
+      --bg-card: #1e2538;
+      --bg-header: #0d1117;
+      --bg-sidebar: #0f1320;
+      --bg-alarm-strip: #1a0a0a;
+      --border-dark: #1e293b;
+      --border-medium: #334155;
+      --border-light: #475569;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-yellow: #f59e0b;
+      --accent-orange: #f97316;
+      --accent-red: #ef4444;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --alarm-critical: #dc2626;
+      --alarm-high: #f97316;
+      --alarm-medium: #f59e0b;
+      --alarm-low: #06b6d4;
+      --status-running: #10b981;
+      --status-stopped: #ef4444;
+      --status-warning: #f59e0b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'Roboto', 'Consolas', monospace;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ═══ LAYOUT PRINCIPAL ═══ */
+    .rtic-layout {
+      display: grid;
+      grid-template-rows: 48px 1fr 36px;
+      grid-template-columns: 220px 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar content"
+        "alarmbar alarmbar";
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ═══ BARRA SUPERIOR ═══ */
+    .rtic-header {
+      grid-area: header;
+      background: linear-gradient(180deg, #0f172a 0%, #0b1023 100%);
+      border-bottom: 2px solid var(--accent-blue);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+
+    .rtic-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .rtic-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .rtic-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .rtic-plant-name {
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-left: 1px solid var(--border-medium);
+      padding-left: 16px;
+    }
+
+    .rtic-plant-name span {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .rtic-header-center {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .rtic-status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .rtic-status-indicator.running {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green);
+    }
+
+    .rtic-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    .rtic-status-dot.green { background: var(--accent-green); }
+    .rtic-status-dot.red { background: var(--accent-red); }
+    .rtic-status-dot.yellow { background: var(--accent-yellow); }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .rtic-comm-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rtic-comm-bar {
+      width: 3px;
+      background: var(--accent-green);
+      border-radius: 1px;
+    }
+
+    .rtic-header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .rtic-clock {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .rtic-operator {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .rtic-operator span {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ═══ SIDEBAR ═══ */
+    .rtic-sidebar {
+      grid-area: sidebar;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-dark);
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .rtic-sidebar::-webkit-scrollbar { width: 4px; }
+    .rtic-sidebar::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 2px; }
+
+    .rtic-nav-section {
+      padding: 12px 16px 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .rtic-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-left: 3px solid transparent;
+      position: relative;
+    }
+
+    .rtic-nav-item:hover {
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--text-primary);
+    }
+
+    .rtic-nav-item.active {
+      background: rgba(59, 130, 246, 0.12);
+      border-left-color: var(--accent-blue);
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .rtic-nav-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .rtic-nav-badge {
+      position: absolute;
+      right: 12px;
+      background: var(--alarm-critical);
+      color: #fff;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      font-weight: 700;
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    /* ═══ CONTENIDO PRINCIPAL ═══ */
+    .rtic-content {
+      grid-area: content;
+      overflow-y: auto;
+      padding: 16px;
+      background: var(--bg-primary);
+    }
+
+    .rtic-content::-webkit-scrollbar { width: 6px; }
+    .rtic-content::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 3px; }
+
+    .rtic-view { display: none; }
+    .rtic-view.active { display: block; }
+
+    /* ═══ BARRA DE ALARMAS ═══ */
+    .rtic-alarm-strip {
+      grid-area: alarmbar;
+      background: var(--bg-alarm-strip);
+      border-top: 2px solid var(--alarm-critical);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .alarm-strip-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--alarm-critical);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .alarm-strip-label .bell {
+      animation: shake-bell 0.5s infinite alternate;
+    }
+
+    @keyframes shake-bell {
+      0% { transform: rotate(-5deg); }
+      100% { transform: rotate(5deg); }
+    }
+
+    .alarm-strip-scroll {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .alarm-strip-inner {
+      display: flex;
+      gap: 24px;
+      animation: scroll-alarm 30s linear infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes scroll-alarm {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-200%); }
+    }
+
+    .alarm-strip-item {
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+
+    .alarm-strip-item.critical { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
+    .alarm-strip-item.high { background: rgba(249, 115, 22, 0.2); color: #fdba74; }
+    .alarm-strip-item.medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .alarm-strip-item.low { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
+
+    .alarm-count-badge {
+      background: var(--alarm-critical);
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    /* ═══ COMPONENTES RTIC ═══ */
+    .rtic-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .rtic-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(59, 130, 246, 0.06);
+      border-bottom: 1px solid var(--border-dark);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+    }
+
+    .rtic-panel-body {
+      padding: 12px;
+    }
+
+    .rtic-tag-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .rtic-tag {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .rtic-tag:hover { border-color: var(--accent-blue); }
+
+    .rtic-tag-name {
+      font-family: 'Consolas', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .rtic-tag-value {
+      font-family: 'Consolas', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .rtic-tag-unit {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .rtic-tag-bar {
+      height: 3px;
+      background: var(--border-dark);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    .rtic-tag-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .rtic-tag.normal .rtic-tag-value { color: var(--accent-green); }
+    .rtic-tag.normal .rtic-tag-bar-fill { background: var(--accent-green); }
+    .rtic-tag.warning .rtic-tag-value { color: var(--accent-yellow); }
+    .rtic-tag.warning .rtic-tag-bar-fill { background: var(--accent-yellow); }
+    .rtic-tag.alarm .rtic-tag-value { color: var(--accent-red); }
+    .rtic-tag.alarm .rtic-tag-bar-fill { background: var(--accent-red); }
+    .rtic-tag.alarm { border-color: var(--accent-red); animation: pulse-alarm 1s infinite; }
+
+    @keyframes pulse-alarm {
+      0%, 100% { border-color: var(--accent-red); }
+      50% { border-color: transparent; }
+    }
+
+    /* ═══ SINÓPTICO / P&ID ═══ */
+    .rtic-synoptic {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .rtic-synoptic svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .rtic-synoptic text {
+      font-family: 'Consolas', monospace;
+    }
+
+    .rtic-synoptic .equipment-label {
+      font-size: 11px;
+      fill: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .rtic-synoptic .tag-label {
+      font-size: 9px;
+      fill: var(--text-muted);
+    }
+
+    .rtic-synoptic .tag-value {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .rtic-synoptic .pipe {
+      stroke: #4b5563;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .rtic-synoptic .pipe-flow {
+      stroke-dasharray: 8 4;
+      animation: pipe-flow 1s linear infinite;
+    }
+
+    @keyframes pipe-flow {
+      to { stroke-dashoffset: -12; }
+    }
+
+    /* ═══ TENDENCIAS ═══ */
+    .rtic-trend-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+
+    .rtic-trend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      margin-bottom: 8px;
+    }
+
+    .rtic-trend-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+    }
+
+    .rtic-trend-canvas {
+      width: 100%;
+      height: 200px;
+      background: #0a0e16;
+      border: 1px solid var(--border-dark);
+      border-radius: 2px;
+    }
+
+    .rtic-trend-legend {
+      display: flex;
+      gap: 16px;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+
+    .rtic-trend-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .rtic-trend-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* ═══ TABLAS RTIC ═══ */
+    .rtic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .rtic-table th {
+      background: rgba(59, 130, 246, 0.1);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      border-bottom: 1px solid var(--border-medium);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+    }
+
+    .rtic-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-dark);
+      color: var(--text-secondary);
+      font-family: 'Consolas', monospace;
+      font-size: 11px;
+    }
+
+    .rtic-table tr:hover td {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    /* ═══ CONTROLES PID ═══ */
+    .rtic-pid-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .rtic-pid-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .rtic-pid-tag {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .rtic-pid-mode {
+      padding: 3px 10px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .rtic-pid-mode.auto {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .rtic-pid-mode.manual {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid var(--accent-yellow);
+      color: var(--accent-yellow);
+    }
+
+    .rtic-pid-mode.cascade {
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid var(--accent-purple);
+      color: var(--accent-purple);
+    }
+
+    .rtic-pid-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .rtic-pid-param {
+      text-align: center;
+      padding: 8px;
+      background: var(--bg-panel);
+      border-radius: 3px;
+      border: 1px solid var(--border-dark);
+    }
+
+    .rtic-pid-param-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .rtic-pid-param-value {
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .rtic-pid-bar {
+      height: 24px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-dark);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rtic-pid-bar-sp {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: var(--accent-red);
+      z-index: 2;
+    }
+
+    .rtic-pid-bar-pv {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .rtic-pid-bar-op {
+      position: absolute;
+      bottom: 0;
+      height: 4px;
+      background: var(--accent-purple);
+      border-radius: 0 0 3px 3px;
+      transition: width 0.5s ease;
+    }
+
+    /* ═══ UTILIDADES ═══ */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+    .color-green { color: var(--accent-green); }
+    .color-red { color: var(--accent-red); }
+    .color-yellow { color: var(--accent-yellow); }
+    .color-cyan { color: var(--accent-cyan); }
+    .color-blue { color: var(--accent-blue); }
+    .color-orange { color: var(--accent-orange); }
+    .color-purple { color: var(--accent-purple); }
+
+    .text-mono { font-family: 'Consolas', monospace; }
+    .text-right { text-align: right; }
+
+    .rtic-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-ok { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-warn { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-alarm { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    /* ═══ OVERVIEW KPI CARDS ═══ */
+    .rtic-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .rtic-kpi {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .rtic-kpi-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .rtic-kpi-value {
+      font-family: 'Consolas', monospace;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .rtic-kpi-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ═══ LOGBOOK ═══ */
+    .rtic-logbook-entry {
+      display: grid;
+      grid-template-columns: 140px 70px 1fr;
+      gap: 8px;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-dark);
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    .rtic-logbook-entry:hover { background: rgba(59, 130, 246, 0.05); }
+
+    .rtic-logbook-time { color: var(--text-muted); }
+
+    .rtic-logbook-type {
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    /* ═══ SMALL BUTTONS ═══ */
+    .rtic-btn {
+      padding: 4px 10px;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 11px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .rtic-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+    .rtic-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+
+    .rtic-btn-group {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* ═══ FACEPLATE ═══ */
+    .rtic-faceplate {
+      background: var(--bg-card);
+      border: 1px solid var(--border-medium);
+      border-radius: 4px;
+      padding: 12px;
+      width: 260px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 500;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      display: none;
+    }
+
+    .rtic-faceplate.open { display: block; }
+
+    .rtic-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      z-index: 499;
+      display: none;
+    }
+
+    .rtic-overlay.open { display: block; }
+
+    /* ═══ REPORTS ═══ */
+    .rtic-report-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .rtic-report-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 14px;
+    }
+
+    .rtic-report-card h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .rtic-report-card .value {
+      font-family: monospace;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    /* ═══ SCROLLBAR GLOBAL ═══ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="rtic-layout">
+    <!-- ═══════ HEADER BAR ═══════ -->
+    <div class="rtic-header">
+      <div class="rtic-header-left">
+        <div class="rtic-logo">
+          <div class="rtic-logo-icon">RT</div>
+          RTIC
+        </div>
+        <div class="rtic-plant-name">
+          Planta <span>MA-100</span> — Anhídrido Maleico | Área Petroquímica
+        </div>
+      </div>
+      <div class="rtic-header-center">
+        <div class="rtic-status-indicator running">
+          <div class="rtic-status-dot green"></div>
+          PLANTA EN OPERACIÓN
+        </div>
+        <div class="rtic-comm-status">
+          <div class="rtic-comm-bar" style="height:8px"></div>
+          <div class="rtic-comm-bar" style="height:12px"></div>
+          <div class="rtic-comm-bar" style="height:16px"></div>
+          <div class="rtic-comm-bar" style="height:20px"></div>
+          COMM OK
+        </div>
+      </div>
+      <div class="rtic-header-right">
+        <div class="rtic-operator">Operador: <span id="operator-name">Ing. S. Barranco</span> | Turno A</div>
+        <div class="rtic-clock" id="rtic-clock">00:00:00</div>
+      </div>
+    </div>
+
+    <!-- ═══════ SIDEBAR NAVIGATION ═══════ -->
+    <div class="rtic-sidebar">
+      <div class="rtic-nav-section">Visualización</div>
+      <div class="rtic-nav-item active" onclick="showModule('overview')">
+        <span class="rtic-nav-icon">📊</span> Overview
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('synoptic')">
+        <span class="rtic-nav-icon">🔧</span> Sinóptico P&ID
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('trends')">
+        <span class="rtic-nav-icon">📈</span> Tendencias
+      </div>
+
+      <div class="rtic-nav-section">Control</div>
+      <div class="rtic-nav-item" onclick="showModule('controls')">
+        <span class="rtic-nav-icon">🎛️</span> Lazos de Control
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('equipment')">
+        <span class="rtic-nav-icon">⚙️</span> Equipos
+      </div>
+
+      <div class="rtic-nav-section">Seguridad</div>
+      <div class="rtic-nav-item" onclick="showModule('alarms')">
+        <span class="rtic-nav-icon">🔔</span> Alarmas
+        <span class="rtic-nav-badge" id="alarm-badge">4</span>
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('interlocks')">
+        <span class="rtic-nav-icon">🔒</span> Interlocks / SIS
+      </div>
+
+      <div class="rtic-nav-section">Producción</div>
+      <div class="rtic-nav-item" onclick="showModule('production')">
+        <span class="rtic-nav-icon">🏭</span> Balance de Masa
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('economics')">
+        <span class="rtic-nav-icon">💰</span> Análisis Económico
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('quality')">
+        <span class="rtic-nav-icon">🧪</span> Calidad
+      </div>
+
+      <div class="rtic-nav-section">IA & Analytics</div>
+      <div class="rtic-nav-item" onclick="showModule('ai')">
+        <span class="rtic-nav-icon">🤖</span> IA & ML
+        <span class="rtic-nav-badge" style="background: var(--accent-purple)">NEW</span>
+      </div>
+
+      <div class="rtic-nav-section">Registros</div>
+      <div class="rtic-nav-item" onclick="showModule('logbook')">
+        <span class="rtic-nav-icon">📋</span> Bitácora
+      </div>
+      <div class="rtic-nav-item" onclick="showModule('reports')">
+        <span class="rtic-nav-icon">📄</span> Reportes
+      </div>
+    </div>
+
+    <!-- ═══════ MAIN CONTENT ═══════ -->
+    <div class="rtic-content" id="rtic-content">
+      <!-- Views are rendered dynamically -->
+    </div>
+
+    <!-- ═══════ ALARM STRIP ═══════ -->
+    <div class="rtic-alarm-strip">
+      <div class="alarm-strip-label">
+        <span class="bell">🔔</span> ALARMAS
+      </div>
+      <div class="alarm-count-badge" id="alarm-strip-count">4 ACTIVAS</div>
+      <div class="alarm-strip-scroll">
+        <div class="alarm-strip-inner" id="alarm-strip-inner">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ FACEPLATE OVERLAY ═══════ -->
+  <div class="rtic-overlay" id="faceplate-overlay" onclick="closeFaceplate()"></div>
+  <div class="rtic-faceplate" id="faceplate">
+    <div id="faceplate-content"></div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // RTIC — MOTOR DE DATOS Y SIMULACIÓN
+    // ═══════════════════════════════════════════════════════════════════
+
+    const MW = { C4H10: 58.12, O2: 32.00, MA: 98.06, H2O: 18.02 };
+    const STOICH = { O2: 3.5, MA: 1.0, H2O: 4.0 };
+
+    const PLANT = {
+      name: "MA-100",
+      area: "Petroquímica",
+      feedVolume: 100000,         // L/semana
+      feedDensity: 0.573,         // kg/L
+      conversion: 0.77,
+      selectivity: 0.80,
+      temperature: 420,           // °C
+      pressure: 2.1,              // bar
+      catalyst: "V₂O₅-MoO₃/TiO₂",
+      operatingHours: 168,
+      days: 7,
+    };
+
+    // Cálculos estequiométricos
+    const massButane = PLANT.feedVolume * PLANT.feedDensity;         // kg
+    const molesButane = (massButane * 1000) / MW.C4H10;              // mol
+    const molesO2 = molesButane * STOICH.O2 * 1.15;                  // +15% exceso
+    const molesMA = molesButane * STOICH.MA * PLANT.conversion * PLANT.selectivity;
+    const molesH2O = molesButane * STOICH.H2O * PLANT.conversion;
+    const massO2 = (molesO2 * MW.O2) / 1000;    // kg
+    const massMA = (molesMA * MW.MA) / 1000;     // kg
+    const massH2O = (molesH2O * MW.H2O) / 1000;  // kg
+    const yieldOverall = PLANT.conversion * PLANT.selectivity * 100;
+
+    // Rates
+    const rateMA_h = massMA / PLANT.operatingHours;      // kg/h
+    const rateMA_d = massMA / PLANT.days;                 // kg/día
+    const rateButane_h = PLANT.feedVolume / PLANT.operatingHours; // L/h
+
+    // Economía
+    const ECO = {
+      butanePrice: 0.85, oxygenPrice: 0.12, maPrice: 2.45,
+      energyRate: 0.08, catalystWeekly: 3150, laborWeekly: 5950, maintWeekly: 2240,
+    };
+
+    const costButane = massButane * ECO.butanePrice;
+    const costO2 = massO2 * ECO.oxygenPrice;
+    const costEnergy = 1890 * ECO.energyRate * PLANT.operatingHours;
+    const totalCost = costButane + costO2 + costEnergy + ECO.catalystWeekly + ECO.laborWeekly + ECO.maintWeekly;
+    const revenue = massMA * ECO.maPrice;
+    const profit = revenue - totalCost;
+    const profitMargin = (profit / revenue) * 100;
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INSTRUMENTOS (TAGs ISA)
+    // ═══════════════════════════════════════════════════════════════════
+
+    const INSTRUMENTS = {
+      // Temperaturas
+      TI_101: { tag: "TI-101", desc: "Temp. entrada reactor", unit: "°C", sp: 420, lo: 390, hi: 450, lolo: 370, hihi: 460, value: 420, area: "Reactor" },
+      TI_102: { tag: "TI-102", desc: "Temp. salida reactor", unit: "°C", sp: 380, lo: 350, hi: 420, lolo: 330, hihi: 440, value: 382, area: "Reactor" },
+      TI_103: { tag: "TI-103", desc: "Temp. precalentador", unit: "°C", sp: 280, lo: 250, hi: 310, lolo: 230, hihi: 330, value: 278, area: "Precalentamiento" },
+      TI_104: { tag: "TI-104", desc: "Temp. enfriador 1°", unit: "°C", sp: 250, lo: 220, hi: 280, lolo: 200, hihi: 300, value: 248, area: "Enfriamiento" },
+      TI_105: { tag: "TI-105", desc: "Temp. enfriador 2°", unit: "°C", sp: 120, lo: 100, hi: 140, lolo: 80, hihi: 160, value: 118, area: "Enfriamiento" },
+      TI_106: { tag: "TI-106", desc: "Temp. absorbedor", unit: "°C", sp: 50, lo: 40, hi: 65, lolo: 30, hihi: 75, value: 52, area: "Absorción" },
+      TI_107: { tag: "TI-107", desc: "Temp. destilación", unit: "°C", sp: 200, lo: 180, hi: 220, lolo: 160, hihi: 240, value: 198, area: "Destilación" },
+      TI_108: { tag: "TI-108", desc: "Temp. cristalizador", unit: "°C", sp: 60, lo: 50, hi: 75, lolo: 40, hihi: 85, value: 62, area: "Cristalización" },
+
+      // Presiones
+      PI_101: { tag: "PI-101", desc: "Presión reactor", unit: "bar", sp: 2.1, lo: 1.8, hi: 2.4, lolo: 1.6, hihi: 2.6, value: 2.10, area: "Reactor" },
+      PI_102: { tag: "PI-102", desc: "Presión mezclador", unit: "bar", sp: 1.2, lo: 1.0, hi: 1.5, lolo: 0.8, hihi: 1.7, value: 1.21, area: "Mezclado" },
+      PI_103: { tag: "PI-103", desc: "Presión absorbedor", unit: "bar", sp: 1.1, lo: 0.9, hi: 1.3, lolo: 0.7, hihi: 1.5, value: 1.08, area: "Absorción" },
+      PI_104: { tag: "PI-104", desc: "Presión destilación", unit: "bar", sp: 0.5, lo: 0.3, hi: 0.7, lolo: 0.2, hihi: 0.8, value: 0.51, area: "Destilación" },
+
+      // Flujos
+      FI_101: { tag: "FI-101", desc: "Flujo n-Butano", unit: "L/h", sp: rateButane_h, lo: rateButane_h*0.9, hi: rateButane_h*1.1, lolo: rateButane_h*0.8, hihi: rateButane_h*1.2, value: rateButane_h, area: "Alimentación" },
+      FI_102: { tag: "FI-102", desc: "Flujo O₂", unit: "kg/h", sp: massO2/168, lo: massO2/168*0.9, hi: massO2/168*1.1, lolo: massO2/168*0.8, hihi: massO2/168*1.2, value: massO2/168, area: "Alimentación" },
+      FI_103: { tag: "FI-103", desc: "Flujo producto MA", unit: "kg/h", sp: rateMA_h, lo: rateMA_h*0.85, hi: rateMA_h*1.15, lolo: rateMA_h*0.7, hihi: rateMA_h*1.3, value: rateMA_h, area: "Producto" },
+
+      // Niveles
+      LI_101: { tag: "LI-101", desc: "Nivel tanque butano", unit: "%", sp: 60, lo: 30, hi: 85, lolo: 15, hihi: 95, value: 62, area: "Almacenamiento" },
+      LI_102: { tag: "LI-102", desc: "Nivel absorbedor", unit: "%", sp: 50, lo: 25, hi: 75, lolo: 10, hihi: 90, value: 48, area: "Absorción" },
+      LI_103: { tag: "LI-103", desc: "Nivel tanque MA", unit: "%", sp: 45, lo: 20, hi: 80, lolo: 10, hihi: 90, value: 43, area: "Almacenamiento" },
+
+      // Análisis
+      AI_101: { tag: "AI-101", desc: "Pureza MA", unit: "%", sp: 99.5, lo: 99.0, hi: 100, lolo: 98.5, hihi: 100, value: 99.6, area: "Calidad" },
+      AI_102: { tag: "AI-102", desc: "O₂ residual gases", unit: "%vol", sp: 3.0, lo: 1.0, hi: 5.0, lolo: 0.5, hihi: 7.0, value: 3.2, area: "Seguridad" },
+    };
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ALARMAS
+    // ═══════════════════════════════════════════════════════════════════
+
+    let alarmList = [
+      { id: 1, time: "2026-02-17 06:14:22", tag: "TI-106", desc: "Temp. absorbedor alta", priority: "MEDIA", value: "67.3°C", limit: "HI: 65°C", ack: false, state: "ACTIVA" },
+      { id: 2, time: "2026-02-17 05:48:09", tag: "LI-102", desc: "Nivel absorbedor bajo", priority: "ALTA", value: "23.1%", limit: "LO: 25%", ack: false, state: "ACTIVA" },
+      { id: 3, time: "2026-02-17 04:32:51", tag: "PI-101", desc: "Presión reactor desviada", priority: "MEDIA", value: "2.38 bar", limit: "HI: 2.4", ack: true, state: "ACTIVA" },
+      { id: 4, time: "2026-02-17 03:15:07", tag: "AI-102", desc: "O₂ residual alto", priority: "ALTA", value: "5.8%vol", limit: "HI: 5.0", ack: false, state: "ACTIVA" },
+      { id: 5, time: "2026-02-17 02:10:33", tag: "TI-101", desc: "Temp. reactor alta", priority: "CRITICA", value: "458.2°C", limit: "HIHI: 460", ack: true, state: "RETORNO" },
+      { id: 6, time: "2026-02-17 01:50:14", tag: "FI-101", desc: "Flujo butano bajo", priority: "BAJA", value: "520 L/h", limit: "LO: 535", ack: true, state: "RETORNO" },
+      { id: 7, time: "2026-02-16 23:45:00", tag: "LI-103", desc: "Nivel tanque MA alto", priority: "MEDIA", value: "82%", limit: "HI: 80", ack: true, state: "RETORNO" },
+      { id: 8, time: "2026-02-16 22:30:22", tag: "TI-104", desc: "Temp. enfriador 1° alta", priority: "BAJA", value: "282°C", limit: "HI: 280", ack: true, state: "RETORNO" },
+    ];
+
+    // ═══════════════════════════════════════════════════════════════════
+    // LAZOS DE CONTROL PID
+    // ═══════════════════════════════════════════════════════════════════
+
+    const PID_LOOPS = [
+      { tag: "TIC-101", desc: "Control Temperatura Reactor", pv: "TI-101", cv: "TV-101", sp: 420, kp: 2.5, ti: 120, td: 30, mode: "AUTO", output: 62, area: "Reactor", unit: "°C" },
+      { tag: "PIC-101", desc: "Control Presión Reactor", pv: "PI-101", cv: "PV-101", sp: 2.1, kp: 1.8, ti: 60, td: 15, mode: "AUTO", output: 55, area: "Reactor", unit: "bar" },
+      { tag: "FIC-101", desc: "Control Flujo n-Butano", pv: "FI-101", cv: "FV-101", sp: rateButane_h, kp: 1.2, ti: 30, td: 0, mode: "CASCADE", output: 48, area: "Alimentación", unit: "L/h" },
+      { tag: "FIC-102", desc: "Control Flujo O₂", pv: "FI-102", cv: "FV-102", sp: massO2/168, kp: 1.5, ti: 45, td: 0, mode: "AUTO", output: 51, area: "Alimentación", unit: "kg/h" },
+      { tag: "TIC-104", desc: "Control Temp. Enfriador 1°", pv: "TI-104", cv: "TV-104", sp: 250, kp: 2.0, ti: 90, td: 20, mode: "AUTO", output: 44, area: "Enfriamiento", unit: "°C" },
+      { tag: "LIC-102", desc: "Control Nivel Absorbedor", pv: "LI-102", cv: "LV-102", sp: 50, kp: 3.0, ti: 180, td: 0, mode: "AUTO", output: 38, area: "Absorción", unit: "%" },
+      { tag: "TIC-107", desc: "Control Temp. Destilación", pv: "TI-107", cv: "TV-107", sp: 200, kp: 2.2, ti: 100, td: 25, mode: "MANUAL", output: 57, area: "Destilación", unit: "°C" },
+      { tag: "TIC-108", desc: "Control Temp. Cristalizador", pv: "TI-108", cv: "TV-108", sp: 60, kp: 1.8, ti: 150, td: 10, mode: "AUTO", output: 41, area: "Cristalización", unit: "°C" },
+    ];
+
+    // ═══════════════════════════════════════════════════════════════════
+    // EQUIPOS
+    // ═══════════════════════════════════════════════════════════════════
+
+    const EQUIPMENT = [
+      { tag: "V-101", name: "Vaporizador de n-Butano", type: "Intercambiador", status: "OPERANDO", temp: "150°C", load: 85 },
+      { tag: "M-101", name: "Mezclador Butano/Aire", type: "Mezclador estático", status: "OPERANDO", temp: "180°C", load: 92 },
+      { tag: "E-101", name: "Precalentador", type: "Intercambiador", status: "OPERANDO", temp: "280°C", load: 78 },
+      { tag: "R-101", name: "Reactor Catalítico de Lecho Fijo", type: "Reactor multitubular", status: "OPERANDO", temp: "420°C", load: 95 },
+      { tag: "E-102", name: "Enfriador de gases 1°", type: "Intercambiador", status: "OPERANDO", temp: "250°C", load: 70 },
+      { tag: "E-103", name: "Enfriador de gases 2°", type: "Intercambiador", status: "OPERANDO", temp: "120°C", load: 65 },
+      { tag: "T-101", name: "Absorbedor", type: "Columna empacada", status: "ADVERTENCIA", temp: "50°C", load: 88 },
+      { tag: "T-102", name: "Columna de Destilación", type: "Columna de platos", status: "OPERANDO", temp: "200°C", load: 82 },
+      { tag: "CR-101", name: "Cristalizador", type: "Cristalizador continuo", status: "OPERANDO", temp: "60°C", load: 75 },
+      { tag: "D-101", name: "Secador rotativo", type: "Secador", status: "OPERANDO", temp: "85°C", load: 60 },
+      { tag: "TK-101", name: "Tanque almacenamiento n-Butano", type: "Tanque presurizado", status: "OPERANDO", temp: "25°C", load: 62 },
+      { tag: "TK-102", name: "Tanque almacenamiento MA", type: "Tanque atmosférico", status: "OPERANDO", temp: "25°C", load: 43 },
+      { tag: "P-101", name: "Bomba alimentación butano", type: "Bomba centrífuga", status: "OPERANDO", temp: "30°C", load: 72 },
+      { tag: "C-101", name: "Compresor de aire", type: "Compresor centrífugo", status: "OPERANDO", temp: "45°C", load: 80 },
+    ];
+
+    // Interlocks
+    const INTERLOCKS = [
+      { tag: "SIS-001", desc: "ESD Reactor — Temperatura extrema (HIHI)", trip: "TI-101 > 460°C", action: "Cierra FV-101, FV-102. Abre PV-ESD", status: "ARMADO", lastTrip: "2026-01-05 14:22" },
+      { tag: "SIS-002", desc: "ESD Reactor — Presión extrema (HIHI)", trip: "PI-101 > 2.6 bar", action: "Cierra FV-101. Abre PSV-101", status: "ARMADO", lastTrip: "NUNCA" },
+      { tag: "SIS-003", desc: "ESD General — O₂ en zona peligrosa", trip: "AI-102 > 7.0%vol", action: "Parada total de alimentaciones", status: "ARMADO", lastTrip: "2025-11-20 08:15" },
+      { tag: "SIS-004", desc: "Protección bomba P-101 — Flujo mínimo", trip: "FI-101 < 300 L/h por 30s", action: "Para P-101, Alarma CRÍTICA", status: "ARMADO", lastTrip: "NUNCA" },
+      { tag: "SIS-005", desc: "Nivel alto tanque MA", trip: "LI-103 > 95%", action: "Cierra LV-103, alarma desvío", status: "ARMADO", lastTrip: "2026-02-01 11:40" },
+      { tag: "SIS-006", desc: "Permisivo arranque reactor", trip: "TI-103 < 200°C", action: "Bloquea apertura FV-101", status: "ARMADO", lastTrip: "N/A" },
+    ];
+
+    // Logbook
+    const LOGBOOK = [
+      { time: "2026-02-17 08:00:00", type: "TURNO", msg: "Inicio turno A — Operador: Ing. S. Barranco" },
+      { time: "2026-02-17 07:45:12", type: "OPER", msg: "Ajuste SP TIC-101 de 418°C a 420°C" },
+      { time: "2026-02-17 06:14:22", type: "ALARMA", msg: "Alarma MEDIA: TI-106 Temp. absorbedor alta (67.3°C > 65°C)" },
+      { time: "2026-02-17 05:48:09", type: "ALARMA", msg: "Alarma ALTA: LI-102 Nivel absorbedor bajo (23.1% < 25%)" },
+      { time: "2026-02-17 05:30:00", type: "OPER", msg: "Aumento caudal agua de enfriamiento E-103 al 80%" },
+      { time: "2026-02-17 04:32:51", type: "ALARMA", msg: "Alarma MEDIA: PI-101 Presión reactor 2.38 bar (HI: 2.4)" },
+      { time: "2026-02-17 04:15:00", type: "MAINT", msg: "Inspección visual filtro F-101 — sin restricciones" },
+      { time: "2026-02-17 03:15:07", type: "ALARMA", msg: "Alarma ALTA: AI-102 O₂ residual 5.8%vol (HI: 5.0)" },
+      { time: "2026-02-17 02:10:33", type: "ALARMA", msg: "Alarma CRÍTICA: TI-101 temp reactor 458.2°C → retorno a normal" },
+      { time: "2026-02-17 01:50:14", type: "ALARMA", msg: "Alarma BAJA: FI-101 flujo butano 520 L/h → retorno" },
+      { time: "2026-02-17 00:00:00", type: "TURNO", msg: "Inicio turno C — Operador: Ing. M. Torres" },
+      { time: "2026-02-16 23:45:00", type: "ALARMA", msg: "Alarma MEDIA: LI-103 Nivel tanque MA 82% (HI: 80%)" },
+      { time: "2026-02-16 22:30:22", type: "OPER", msg: "Despacho camión cisterna MA — 8,500 kg" },
+      { time: "2026-02-16 22:00:00", type: "CALIDAD", msg: "Lote MA-2026-005: Pureza 99.8% — APROBADO" },
+      { time: "2026-02-16 20:15:00", type: "MAINT", msg: "Lubricación bomba P-101 programada completada" },
+    ];
+
+    // Trend data history (simulated)
+    let trendData = {
+      TI_101: [], PI_101: [], FI_101: [], FI_103: [], AI_101: [], LI_101: [],
+    };
+
+    // Pre-fill 300 points of history (~10 min at 2s interval)
+    for (let i = 300; i >= 0; i--) {
+      const n = () => (Math.random() - 0.5) * 2;
+      trendData.TI_101.push(420 + n() * 6);
+      trendData.PI_101.push(2.1 + n() * 0.12);
+      trendData.FI_101.push(rateButane_h + n() * rateButane_h * 0.05);
+      trendData.FI_103.push(rateMA_h + n() * rateMA_h * 0.08);
+      trendData.AI_101.push(99.5 + n() * 0.3);
+      trendData.LI_101.push(60 + n() * 5);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // MÓDULO IA & MACHINE LEARNING — Industria 4.0
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Modelos ML (simulados)
+    const ML_MODELS = {
+      tempPredictor: {
+        name: "LSTM Temperature Predictor",
+        type: "Recurrent Neural Network",
+        accuracy: 96.3,
+        lastTrained: "2026-02-10 14:30",
+        epochs: 500,
+        layers: "64→32→16→1",
+        loss: 0.0234,
+        status: "ACTIVO"
+      },
+      yieldOptimizer: {
+        name: "Yield Optimization Model",
+        type: "Gradient Boosting Regressor",
+        accuracy: 94.1,
+        lastTrained: "2026-02-12 09:15",
+        features: 12,
+        trees: 200,
+        r2Score: 0.941,
+        status: "ACTIVO"
+      },
+      anomalyDetector: {
+        name: "Anomaly Detection (Isolation Forest)",
+        type: "Ensemble Unsupervised",
+        precision: 92.5,
+        recall: 88.7,
+        lastTrained: "2026-02-15 22:00",
+        contamination: 0.05,
+        nEstimators: 100,
+        status: "ACTIVO"
+      },
+      maintPredictor: {
+        name: "Predictive Maintenance",
+        type: "Random Forest Classifier",
+        accuracy: 89.2,
+        lastTrained: "2026-02-14 18:45",
+        features: 18,
+        classes: ["OK", "WARNING", "CRITICAL"],
+        status: "ACTIVO"
+      },
+      regimeClassifier: {
+        name: "Operating Regime Classifier",
+        type: "K-Means Clustering",
+        silhouetteScore: 0.73,
+        lastTrained: "2026-02-11 03:20",
+        nClusters: 4,
+        inertia: 1523.4,
+        status: "ACTIVO"
+      },
+      mpcController: {
+        name: "Model Predictive Controller",
+        type: "Linear MPC",
+        horizon: 20,
+        controlInterval: 30,
+        constraints: 8,
+        objectives: 3,
+        status: "STANDBY"
+      }
+    };
+
+    // Predicciones actuales
+    let predictions = {
+      temperature: { next5min: 421.3, next15min: 419.8, next30min: 420.5, confidence: 94.2 },
+      pressure: { next5min: 2.08, next15min: 2.11, next30min: 2.09, confidence: 91.5 },
+      yield: { predicted: 69.2, current: 68.0, optimizable: true, potentialGain: 1.8 },
+      production: { next24h: rateMA_d * 1.03, trend: "CRECIENTE", confidence: 87.3 }
+    };
+
+    // Detección de anomalías
+    let anomalies = [
+      { time: "2026-02-17 07:42:18", tag: "TI-101", score: 0.87, severity: "BAJA", desc: "Oscilación anormal detectada", action: "Monitorear lazo TIC-101" },
+      { time: "2026-02-17 06:15:33", tag: "PI-101", score: 0.92, severity: "MEDIA", desc: "Deriva lenta fuera de patrón normal", action: "Verificar válvula PV-101" },
+      { time: "2026-02-17 05:28:44", tag: "FI-103", score: 0.73, severity: "BAJA", desc: "Varianza elevada", action: "Revisar medidor de flujo" },
+    ];
+
+    // Recomendaciones de optimización
+    let recommendations = [
+      {
+        id: 1,
+        priority: "ALTA",
+        type: "OPTIMIZACIÓN",
+        title: "Incremento de temperatura reactor",
+        desc: "El modelo sugiere aumentar temperatura de 420°C a 423°C",
+        impact: "Aumento rendimiento: +1.5% (hasta 69.5%)",
+        confidence: 91.2,
+        roi: "USD 1,850/semana",
+        risk: "BAJO",
+        autoApply: false,
+        status: "PENDIENTE"
+      },
+      {
+        id: 2,
+        priority: "MEDIA",
+        type: "MANTENIMIENTO",
+        title: "Mantenimiento preventivo bomba P-101",
+        desc: "Patrón de vibración indica desgaste incrementado",
+        impact: "Probabilidad falla en 72h: 23%",
+        confidence: 78.5,
+        recommendedAction: "Inspección rodamientos en próxima parada",
+        risk: "MEDIO",
+        status: "PENDIENTE"
+      },
+      {
+        id: 3,
+        priority: "BAJA",
+        type: "EFICIENCIA",
+        title: "Ajuste ratio O₂/n-Butano",
+        desc: "Exceso de oxígeno puede reducirse de 15% a 12%",
+        impact: "Ahorro: USD 420/semana en O₂",
+        confidence: 85.7,
+        roi: "USD 21,840/año",
+        risk: "BAJO",
+        autoApply: false,
+        status: "PENDIENTE"
+      },
+      {
+        id: 4,
+        priority: "MEDIA",
+        type: "CALIDAD",
+        title: "Optimización tiempo de cristalización",
+        desc: "Modelo sugiere aumentar tiempo de residencia +8min",
+        impact: "Mejora pureza esperada: +0.2% (hasta 99.8%)",
+        confidence: 82.1,
+        roi: "USD 950/semana",
+        risk: "BAJO",
+        status: "PENDIENTE"
+      }
+    ];
+
+    // Clustering de regímenes operativos
+    const operatingRegimes = [
+      { id: 0, name: "Óptimo Alto Rendimiento", frequency: 42, avgYield: 69.8, avgTemp: 422, color: "#10b981" },
+      { id: 1, name: "Normal Estable", frequency: 156, avgYield: 67.5, avgTemp: 420, color: "#3b82f6" },
+      { id: 2, name: "Subóptimo", frequency: 38, avgYield: 64.2, avgTemp: 418, color: "#f59e0b" },
+      { id: 3, name: "Inestable", frequency: 12, avgYield: 61.3, avgTemp: 425, color: "#ef4444" },
+    ];
+
+    // Insights ML
+    let mlInsights = [
+      { icon: "💡", text: "Régimen operativo actual clasificado como 'Normal Estable' con 94.2% confianza" },
+      { icon: "📊", text: "Patrón de temperatura indica convergencia a punto óptimo en ~45 minutos" },
+      { icon: "⚡", text: "Eficiencia energética 3.2% superior al promedio histórico" },
+      { icon: "🎯", text: "Calidad predicha para próximo lote: 99.6% pureza (±0.2%)" },
+      { icon: "🔮", text: "Probabilidad de alcanzar meta semanal: 96.8%" },
+      { icon: "⚠️", text: "Sensor TI-106 mostrando deriva térmica — recalibración sugerida" },
+    ];
+
+    // ═══════════════════════════════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════════════════════════════
+
+    let currentModule = 'overview';
+
+    function showModule(moduleId) {
+      currentModule = moduleId;
+
+      // Update nav items
+      document.querySelectorAll('.rtic-nav-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      // Render
+      renderCurrentModule();
+    }
+
+    function renderCurrentModule() {
+      const content = document.getElementById('rtic-content');
+      switch (currentModule) {
+        case 'overview': content.innerHTML = renderOverview(); break;
+        case 'synoptic': content.innerHTML = renderSynoptic(); break;
+        case 'trends': content.innerHTML = renderTrends(); initTrendCanvases(); break;
+        case 'controls': content.innerHTML = renderControls(); break;
+        case 'equipment': content.innerHTML = renderEquipment(); break;
+        case 'alarms': content.innerHTML = renderAlarms(); break;
+        case 'interlocks': content.innerHTML = renderInterlocks(); break;
+        case 'production': content.innerHTML = renderProduction(); break;
+        case 'economics': content.innerHTML = renderEconomics(); break;
+        case 'quality': content.innerHTML = renderQuality(); break;
+        case 'ai': content.innerHTML = renderAI(); break;
+        case 'logbook': content.innerHTML = renderLogbook(); break;
+        case 'reports': content.innerHTML = renderReports(); break;
+        default: content.innerHTML = renderOverview();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: OVERVIEW
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderOverview() {
+      const activeAlarms = alarmList.filter(a => a.state === "ACTIVA").length;
+      return `
+        <div class="rtic-kpi-row">
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">Estado Planta</div>
+            <div class="rtic-kpi-value color-green">OPERANDO</div>
+            <div class="rtic-kpi-sub">${PLANT.operatingHours}h continuas planificadas</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-cyan)">
+            <div class="rtic-kpi-label">Producción MA Semanal</div>
+            <div class="rtic-kpi-value color-cyan">${massMA.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+            <div class="rtic-kpi-sub">${rateMA_h.toFixed(1)} kg/h | ${rateMA_d.toFixed(0)} kg/día</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-yellow)">
+            <div class="rtic-kpi-label">Alimentación n-Butano</div>
+            <div class="rtic-kpi-value color-yellow">${PLANT.feedVolume.toLocaleString()} L</div>
+            <div class="rtic-kpi-sub">${rateButane_h.toFixed(0)} L/h</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-red)">
+            <div class="rtic-kpi-label">Alarmas Activas</div>
+            <div class="rtic-kpi-value color-red" id="kpi-alarms">${activeAlarms}</div>
+            <div class="rtic-kpi-sub">${alarmList.filter(a => !a.ack).length} sin reconocer</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">Rendimiento Global</div>
+            <div class="rtic-kpi-value color-green">${yieldOverall.toFixed(1)}%</div>
+            <div class="rtic-kpi-sub">Conv. ${(PLANT.conversion*100).toFixed(0)}% × Sel. ${(PLANT.selectivity*100).toFixed(0)}%</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-purple)">
+            <div class="rtic-kpi-label">Margen de Beneficio</div>
+            <div class="rtic-kpi-value color-purple">${profitMargin.toFixed(1)}%</div>
+            <div class="rtic-kpi-sub">USD ${profit.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} / semana</div>
+          </div>
+        </div>
+
+        <!-- VARIABLES CRÍTICAS -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔴 Variables Críticas — Tiempo Real</span>
+            <span style="font-size:10px; color: var(--text-muted)">Actualización: 2s</span>
+          </div>
+          <div class="rtic-panel-body">
+            <div class="rtic-tag-group" id="critical-tags">
+              ${renderTagCard(INSTRUMENTS.TI_101)}
+              ${renderTagCard(INSTRUMENTS.PI_101)}
+              ${renderTagCard(INSTRUMENTS.FI_101)}
+              ${renderTagCard(INSTRUMENTS.FI_103)}
+              ${renderTagCard(INSTRUMENTS.TI_102)}
+              ${renderTagCard(INSTRUMENTS.AI_101)}
+              ${renderTagCard(INSTRUMENTS.LI_101)}
+              ${renderTagCard(INSTRUMENTS.LI_103)}
+              ${renderTagCard(INSTRUMENTS.AI_102)}
+              ${renderTagCard(INSTRUMENTS.TI_106)}
+            </div>
+          </div>
+        </div>
+
+        <!-- ETAPAS -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>⚙️ Etapas del Proceso</span>
+            <span class="rtic-badge badge-ok">12 ETAPAS</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr>
+                  <th>Nº</th><th>Etapa</th><th>Temp. (°C)</th><th>Presión (bar)</th><th>Energía (kW)</th><th>Eficiencia</th><th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${[
+                  { n: 1, name: "Vaporización", t: 150, p: 1.0, e: 85, eff: 98, s: "OK" },
+                  { n: 2, name: "Mezclado", t: 180, p: 1.2, e: 45, eff: 99, s: "OK" },
+                  { n: 3, name: "Precalentamiento", t: 280, p: 1.8, e: 120, eff: 96, s: "OK" },
+                  { n: 4, name: "Reactor Catalítico", t: 420, p: 2.1, e: 450, eff: 95, s: "OK" },
+                  { n: 5, name: "Enfriamiento 1°", t: 250, p: 1.9, e: 180, eff: 97, s: "OK" },
+                  { n: 6, name: "Enfriamiento 2°", t: 120, p: 1.5, e: 150, eff: 98, s: "OK" },
+                  { n: 7, name: "Absorción", t: 50, p: 1.1, e: 95, eff: 94, s: "WARN" },
+                  { n: 8, name: "Destilación", t: 200, p: 0.5, e: 280, eff: 92, s: "OK" },
+                  { n: 9, name: "Purificación", t: 165, p: 0.3, e: 220, eff: 90, s: "OK" },
+                  { n: 10, name: "Cristalización", t: 60, p: 1.0, e: 110, eff: 96, s: "OK" },
+                  { n: 11, name: "Secado", t: 85, p: 0.8, e: 140, eff: 97, s: "OK" },
+                  { n: 12, name: "Almacenamiento", t: 25, p: 1.0, e: 15, eff: 100, s: "OK" },
+                ].map(st => `
+                  <tr>
+                    <td>${st.n}</td>
+                    <td style="color: var(--text-primary)">${st.name}</td>
+                    <td class="color-orange">${st.t}</td>
+                    <td class="color-yellow">${st.p}</td>
+                    <td class="color-cyan">${st.e}</td>
+                    <td><span class="rtic-badge ${st.eff >= 96 ? 'badge-ok' : st.eff >= 92 ? 'badge-warn' : 'badge-alarm'}">${st.eff}%</span></td>
+                    <td><span class="rtic-badge ${st.s === 'OK' ? 'badge-ok' : 'badge-warn'}">${st.s}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ÚLTIMAS ALARMAS -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔔 Últimas Alarmas</span>
+            <button class="rtic-btn" onclick="document.querySelectorAll('.rtic-nav-item')[5].click()">Ver todas →</button>
+          </div>
+          <div class="rtic-panel-body" style="max-height: 200px; overflow-y: auto;">
+            <table class="rtic-table">
+              <thead><tr><th>Hora</th><th>Tag</th><th>Descripción</th><th>Prioridad</th><th>Estado</th></tr></thead>
+              <tbody>
+                ${alarmList.slice(0, 5).map(a => `
+                  <tr>
+                    <td>${a.time.split(' ')[1]}</td>
+                    <td class="color-cyan">${a.tag}</td>
+                    <td>${a.desc}</td>
+                    <td><span class="rtic-badge ${a.priority === 'CRITICA' ? 'badge-alarm' : a.priority === 'ALTA' ? 'badge-alarm' : a.priority === 'MEDIA' ? 'badge-warn' : 'badge-info'}">${a.priority}</span></td>
+                    <td><span class="rtic-badge ${a.state === 'ACTIVA' ? 'badge-alarm' : 'badge-ok'}">${a.state}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTagCard(inst) {
+      const pct = Math.min(100, Math.max(0, ((inst.value - inst.lolo) / (inst.hihi - inst.lolo)) * 100));
+      let status = 'normal';
+      if (inst.value <= inst.lolo || inst.value >= inst.hihi) status = 'alarm';
+      else if (inst.value <= inst.lo || inst.value >= inst.hi) status = 'warning';
+      return `
+        <div class="rtic-tag ${status}" onclick="openFaceplate('${inst.tag}')" data-tag="${inst.tag}">
+          <div class="rtic-tag-name">${inst.tag}</div>
+          <div class="rtic-tag-value">${typeof inst.value === 'number' ? (inst.value < 10 ? inst.value.toFixed(2) : inst.value.toFixed(1)) : inst.value}<span class="rtic-tag-unit"> ${inst.unit}</span></div>
+          <div style="font-size:10px; color: var(--text-muted)">${inst.desc}</div>
+          <div class="rtic-tag-bar"><div class="rtic-tag-bar-fill" style="width: ${pct}%"></div></div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: SINÓPTICO P&ID
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderSynoptic() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔧 Sinóptico — P&ID Planta MA-100</span>
+            <div class="rtic-btn-group">
+              <button class="rtic-btn active">Normal</button>
+              <button class="rtic-btn">Temperaturas</button>
+              <button class="rtic-btn">Presiones</button>
+            </div>
+          </div>
+        </div>
+        <div class="rtic-synoptic">
+          <svg viewBox="0 0 1400 700" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="grd-reactor" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#dc2626;stop-opacity:0.4"/>
+                <stop offset="100%" style="stop-color:#991b1b;stop-opacity:0.7"/>
+              </linearGradient>
+              <linearGradient id="grd-column" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.3"/>
+                <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:0.5"/>
+              </linearGradient>
+              <linearGradient id="grd-tank" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#475569;stop-opacity:0.3"/>
+                <stop offset="100%" style="stop-color:#334155;stop-opacity:0.5"/>
+              </linearGradient>
+              <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L6,3 z" fill="#6b7280"/>
+              </marker>
+            </defs>
+
+            <!-- Background grid -->
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+            <rect width="1400" height="700" fill="url(#grid)"/>
+
+            <!-- ═══ TK-101: TANQUE BUTANO ═══ -->
+            <rect x="30" y="200" width="70" height="120" rx="5" fill="url(#grd-tank)" stroke="#64748b" stroke-width="2"/>
+            <text x="65" y="195" text-anchor="middle" class="equipment-label">TK-101</text>
+            <text x="65" y="330" text-anchor="middle" class="tag-label">n-Butano</text>
+            <text x="65" y="265" text-anchor="middle" class="tag-value" fill="#f59e0b" id="syn-LI101">62%</text>
+            <text x="65" y="280" text-anchor="middle" class="tag-label">LI-101</text>
+
+            <!-- P-101: BOMBA -->
+            <circle cx="140" cy="310" r="15" fill="none" stroke="#64748b" stroke-width="2"/>
+            <text x="140" y="314" text-anchor="middle" style="font-size:10px; fill:#10b981; font-weight:700">P</text>
+            <text x="140" y="335" text-anchor="middle" class="tag-label">P-101</text>
+
+            <!-- Pipe TK-101 → P-101 -->
+            <line x1="100" y1="310" x2="125" y2="310" class="pipe pipe-flow" stroke="#f59e0b"/>
+
+            <!-- Pipe P-101 → V-101 -->
+            <line x1="155" y1="310" x2="200" y2="310" class="pipe pipe-flow" stroke="#f59e0b" marker-end="url(#arr)"/>
+
+            <!-- FI-101 tag -->
+            <rect x="160" y="285" width="50" height="20" rx="2" fill="#1e2538" stroke="#3b82f6" stroke-width="1"/>
+            <text x="185" y="298" text-anchor="middle" class="tag-value" fill="#06b6d4" style="font-size:9px" id="syn-FI101">${rateButane_h.toFixed(0)} L/h</text>
+            <text x="185" y="278" text-anchor="middle" class="tag-label">FI-101</text>
+
+            <!-- ═══ V-101: VAPORIZADOR ═══ -->
+            <rect x="200" y="270" width="60" height="80" rx="8" fill="url(#grd-tank)" stroke="#f59e0b" stroke-width="2"/>
+            <text x="230" y="265" text-anchor="middle" class="equipment-label">V-101</text>
+            <text x="230" y="315" text-anchor="middle" style="font-size:9px; fill:#f59e0b">150°C</text>
+
+            <!-- C-101: COMPRESOR AIRE -->
+            <polygon points="100,420 130,400 130,440" fill="none" stroke="#64748b" stroke-width="2"/>
+            <text x="115" y="460" text-anchor="middle" class="tag-label">C-101</text>
+            <text x="115" y="425" text-anchor="middle" style="font-size:9px; fill:#06b6d4">AIRE</text>
+
+            <!-- Pipe C-101 → M-101 -->
+            <line x1="130" y1="420" x2="310" y2="420" class="pipe pipe-flow" stroke="#06b6d4" marker-end="url(#arr)"/>
+
+            <!-- FI-102 tag -->
+            <rect x="195" y="395" width="55" height="20" rx="2" fill="#1e2538" stroke="#3b82f6" stroke-width="1"/>
+            <text x="222" y="408" text-anchor="middle" class="tag-value" fill="#06b6d4" style="font-size:9px" id="syn-FI102">${(massO2/168).toFixed(0)} kg/h</text>
+            <text x="222" y="388" text-anchor="middle" class="tag-label">FI-102</text>
+
+            <!-- Pipe V-101 → M-101 -->
+            <polyline points="260,310 285,310 310,360" class="pipe pipe-flow" stroke="#f59e0b" fill="none" marker-end="url(#arr)"/>
+
+            <!-- ═══ M-101: MEZCLADOR ═══ -->
+            <circle cx="330" cy="370" r="25" fill="url(#grd-tank)" stroke="#64748b" stroke-width="2"/>
+            <text x="330" y="340" text-anchor="middle" class="equipment-label">M-101</text>
+            <text x="330" y="375" text-anchor="middle" style="font-size:9px; fill:#94a3b8">MIX</text>
+
+            <!-- Pipe M-101 → E-101 -->
+            <line x1="355" y1="370" x2="410" y2="370" class="pipe pipe-flow" stroke="#94a3b8" marker-end="url(#arr)"/>
+
+            <!-- ═══ E-101: PRECALENTADOR ═══ -->
+            <rect x="410" y="345" width="55" height="50" rx="3" fill="url(#grd-tank)" stroke="#f97316" stroke-width="2"/>
+            <text x="437" y="340" text-anchor="middle" class="equipment-label">E-101</text>
+            <text x="437" y="375" text-anchor="middle" style="font-size:9px; fill:#f97316">280°C</text>
+
+            <!-- TI-103 -->
+            <rect x="415" y="400" width="45" height="16" rx="2" fill="#1e2538" stroke="#ef4444" stroke-width="1"/>
+            <text x="437" y="412" text-anchor="middle" class="tag-value" fill="#ef4444" style="font-size:8px" id="syn-TI103">278°C</text>
+
+            <!-- Pipe E-101 → R-101 -->
+            <line x1="465" y1="370" x2="520" y2="370" class="pipe pipe-flow" stroke="#f97316" marker-end="url(#arr)"/>
+
+            <!-- ═══ R-101: REACTOR CATALÍTICO ═══ -->
+            <rect x="520" y="250" width="100" height="200" rx="15" fill="url(#grd-reactor)" stroke="#ef4444" stroke-width="3"/>
+            <text x="570" y="245" text-anchor="middle" class="equipment-label" style="font-size:13px; fill:#fca5a5">R-101</text>
+            
+            <!-- Catalyst bed -->
+            <rect x="535" y="310" width="70" height="60" rx="4" fill="rgba(139,92,246,0.3)" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4 2"/>
+            <text x="570" y="345" text-anchor="middle" style="font-size:8px; fill:#c4b5fd">${PLANT.catalyst}</text>
+
+            <!-- TI-101 -->
+            <rect x="625" y="280" width="55" height="20" rx="2" fill="#1e2538" stroke="#ef4444" stroke-width="1"/>
+            <text x="652" y="293" text-anchor="middle" class="tag-value" fill="#ef4444" style="font-size:9px" id="syn-TI101">420°C</text>
+            <text x="652" y="275" text-anchor="middle" class="tag-label">TI-101</text>
+
+            <!-- PI-101 -->
+            <rect x="625" y="310" width="55" height="20" rx="2" fill="#1e2538" stroke="#f59e0b" stroke-width="1"/>
+            <text x="652" y="323" text-anchor="middle" class="tag-value" fill="#f59e0b" style="font-size:9px" id="syn-PI101">2.10 bar</text>
+            <text x="652" y="340" text-anchor="middle" class="tag-label">PI-101</text>
+
+            <!-- Reaction particles -->
+            <circle cx="550" cy="340" r="3" fill="#fbbf24" opacity="0.7">
+              <animate attributeName="cy" values="340;320;340" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="570" cy="340" r="3" fill="#60a5fa" opacity="0.7">
+              <animate attributeName="cy" values="340;325;340" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="590" cy="340" r="3" fill="#34d399" opacity="0.7">
+              <animate attributeName="cy" values="340;315;340" dur="2.2s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Gases salida (arriba) -->
+            <line x1="570" y1="250" x2="570" y2="180" class="pipe pipe-flow" stroke="#64748b" marker-end="url(#arr)"/>
+            <text x="585" y="210" class="tag-label" fill="#94a3b8">CO/CO₂</text>
+            <text x="575" y="175" text-anchor="middle" style="font-size:9px; fill:#64748b">VENT/FLARE</text>
+
+            <!-- Pipe R-101 → E-102 -->
+            <polyline points="620,370 680,370" class="pipe pipe-flow" stroke="#ef4444" fill="none" marker-end="url(#arr)"/>
+
+            <!-- TI-102 -->
+            <rect x="630" y="350" width="45" height="16" rx="2" fill="#1e2538" stroke="#ef4444" stroke-width="1"/>
+            <text x="652" y="362" text-anchor="middle" class="tag-value" fill="#ef4444" style="font-size:8px" id="syn-TI102">382°C</text>
+
+            <!-- ═══ E-102: ENFRIADOR 1° ═══ -->
+            <rect x="680" y="345" width="50" height="50" rx="3" fill="url(#grd-tank)" stroke="#06b6d4" stroke-width="2"/>
+            <text x="705" y="340" text-anchor="middle" class="equipment-label">E-102</text>
+            <text x="705" y="375" text-anchor="middle" style="font-size:9px; fill:#06b6d4">250°C</text>
+
+            <!-- Pipe E-102 → E-103 -->
+            <line x1="730" y1="370" x2="780" y2="370" class="pipe pipe-flow" stroke="#06b6d4" marker-end="url(#arr)"/>
+
+            <!-- ═══ E-103: ENFRIADOR 2° ═══ -->
+            <rect x="780" y="345" width="50" height="50" rx="3" fill="url(#grd-tank)" stroke="#06b6d4" stroke-width="2"/>
+            <text x="805" y="340" text-anchor="middle" class="equipment-label">E-103</text>
+            <text x="805" y="375" text-anchor="middle" style="font-size:9px; fill:#06b6d4">120°C</text>
+
+            <!-- Pipe E-103 → T-101 -->
+            <line x1="830" y1="370" x2="890" y2="370" class="pipe pipe-flow" stroke="#3b82f6" marker-end="url(#arr)"/>
+
+            <!-- ═══ T-101: ABSORBEDOR ═══ -->
+            <rect x="890" y="250" width="60" height="170" rx="10" fill="url(#grd-column)" stroke="#3b82f6" stroke-width="2"/>
+            <text x="920" y="245" text-anchor="middle" class="equipment-label">T-101</text>
+            <!-- Packing lines -->
+            <line x1="900" y1="300" x2="940" y2="300" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+            <line x1="900" y1="330" x2="940" y2="330" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+            <line x1="900" y1="360" x2="940" y2="360" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+            <line x1="900" y1="390" x2="940" y2="390" stroke="#475569" stroke-width="1" stroke-dasharray="3 2"/>
+
+            <!-- LI-102 -->
+            <rect x="955" y="350" width="45" height="20" rx="2" fill="#1e2538" stroke="#3b82f6" stroke-width="1"/>
+            <text x="977" y="363" text-anchor="middle" class="tag-value" fill="#3b82f6" style="font-size:9px" id="syn-LI102">48%</text>
+            <text x="977" y="380" text-anchor="middle" class="tag-label">LI-102</text>
+
+            <!-- TI-106 -->
+            <rect x="955" y="300" width="45" height="20" rx="2" fill="#1e2538" stroke="#ef4444" stroke-width="1"/>
+            <text x="977" y="313" text-anchor="middle" class="tag-value" fill="#ef4444" style="font-size:9px" id="syn-TI106">52°C</text>
+            <text x="977" y="330" text-anchor="middle" class="tag-label">TI-106</text>
+
+            <!-- Pipe T-101 → T-102 -->
+            <polyline points="950,380 980,380 980,530 1050,530" class="pipe pipe-flow" stroke="#3b82f6" fill="none" marker-end="url(#arr)"/>
+
+            <!-- ═══ T-102: DESTILACIÓN ═══ -->
+            <rect x="1050" y="450" width="55" height="150" rx="8" fill="url(#grd-column)" stroke="#8b5cf6" stroke-width="2"/>
+            <text x="1077" y="445" text-anchor="middle" class="equipment-label">T-102</text>
+            <!-- Trays -->
+            <line x1="1058" y1="490" x2="1097" y2="490" stroke="#475569" stroke-width="1"/>
+            <line x1="1058" y1="520" x2="1097" y2="520" stroke="#475569" stroke-width="1"/>
+            <line x1="1058" y1="550" x2="1097" y2="550" stroke="#475569" stroke-width="1"/>
+
+            <!-- TI-107 -->
+            <rect x="1110" y="500" width="45" height="20" rx="2" fill="#1e2538" stroke="#8b5cf6" stroke-width="1"/>
+            <text x="1132" y="513" text-anchor="middle" class="tag-value" fill="#8b5cf6" style="font-size:9px" id="syn-TI107">198°C</text>
+            <text x="1132" y="530" text-anchor="middle" class="tag-label">TI-107</text>
+
+            <!-- Pipe T-102 → CR-101 -->
+            <polyline points="1105,530 1160,530 1160,370 1220,370" class="pipe pipe-flow" stroke="#10b981" fill="none" marker-end="url(#arr)"/>
+
+            <!-- FI-103 -->
+            <rect x="1160" y="345" width="55" height="20" rx="2" fill="#1e2538" stroke="#10b981" stroke-width="1"/>
+            <text x="1187" y="358" text-anchor="middle" class="tag-value" fill="#10b981" style="font-size:9px" id="syn-FI103">${rateMA_h.toFixed(1)} kg/h</text>
+            <text x="1187" y="340" text-anchor="middle" class="tag-label">FI-103</text>
+
+            <!-- ═══ CR-101: CRISTALIZADOR ═══ -->
+            <rect x="1220" y="340" width="60" height="60" rx="4" fill="url(#grd-tank)" stroke="#10b981" stroke-width="2"/>
+            <text x="1250" y="335" text-anchor="middle" class="equipment-label">CR-101</text>
+            <text x="1250" y="375" text-anchor="middle" style="font-size:9px; fill:#10b981">60°C</text>
+
+            <!-- Pipe CR-101 → TK-102 -->
+            <polyline points="1280,370 1310,370 1310,260 1340,260" class="pipe pipe-flow" stroke="#10b981" fill="none" marker-end="url(#arr)"/>
+
+            <!-- AI-101 -->
+            <rect x="1285" y="290" width="50" height="20" rx="2" fill="#1e2538" stroke="#10b981" stroke-width="1"/>
+            <text x="1310" y="303" text-anchor="middle" class="tag-value" fill="#10b981" style="font-size:9px" id="syn-AI101">99.6%</text>
+            <text x="1310" y="320" text-anchor="middle" class="tag-label">AI-101</text>
+
+            <!-- ═══ TK-102: TANQUE MA ═══ -->
+            <rect x="1310" y="200" width="70" height="100" rx="5" fill="url(#grd-tank)" stroke="#10b981" stroke-width="2"/>
+            <text x="1345" y="195" text-anchor="middle" class="equipment-label" style="fill: #10b981">TK-102</text>
+            <text x="1345" y="310" text-anchor="middle" class="tag-label" fill="#10b981">Anhídrido Maleico</text>
+            <text x="1345" y="255" text-anchor="middle" class="tag-value" fill="#10b981" id="syn-LI103">43%</text>
+            <text x="1345" y="270" text-anchor="middle" class="tag-label">LI-103</text>
+
+            <!-- Ecuación química -->
+            <rect x="360" y="620" width="680" height="50" rx="5" fill="#111827" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="700" y="645" text-anchor="middle" style="font-size:16px; font-weight:700; fill:#e2e8f0; font-family: Consolas, monospace">
+              C₄H₁₀ + 3.5 O₂  →  C₄H₂O₃ + 4 H₂O
+            </text>
+            <text x="700" y="662" text-anchor="middle" style="font-size:10px; fill:#64748b">
+              Catalizador: ${PLANT.catalyst} | Conv: ${(PLANT.conversion*100)}% | Sel: ${(PLANT.selectivity*100)}% | Rend: ${yieldOverall.toFixed(1)}%
+            </text>
+          </svg>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: TENDENCIAS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderTrends() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>📈 Tendencias del Proceso — Últimos 10 min</span>
+            <div class="rtic-btn-group">
+              <button class="rtic-btn active">10 min</button>
+              <button class="rtic-btn">1 hora</button>
+              <button class="rtic-btn">8 horas</button>
+              <button class="rtic-btn">24 horas</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="rtic-trend-container">
+            <div class="rtic-trend-header">
+              <span class="rtic-trend-title">TI-101 — Temperatura Reactor (°C)</span>
+              <span style="font-size:11px; color: var(--accent-red); font-family: monospace" id="trend-val-TI101">420.0</span>
+            </div>
+            <canvas class="rtic-trend-canvas" id="trend-TI101"></canvas>
+            <div class="rtic-trend-legend">
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#ef4444"></div>PV</div>
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#f59e0b"></div>SP: 420°C</div>
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:rgba(239,68,68,0.2)"></div>HI: 450 / LO: 390</div>
+            </div>
+          </div>
+
+          <div class="rtic-trend-container">
+            <div class="rtic-trend-header">
+              <span class="rtic-trend-title">PI-101 — Presión Reactor (bar)</span>
+              <span style="font-size:11px; color: var(--accent-yellow); font-family: monospace" id="trend-val-PI101">2.10</span>
+            </div>
+            <canvas class="rtic-trend-canvas" id="trend-PI101"></canvas>
+            <div class="rtic-trend-legend">
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#f59e0b"></div>PV</div>
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#ef4444"></div>SP: 2.1 bar</div>
+            </div>
+          </div>
+
+          <div class="rtic-trend-container">
+            <div class="rtic-trend-header">
+              <span class="rtic-trend-title">FI-101 — Flujo n-Butano (L/h)</span>
+              <span style="font-size:11px; color: var(--accent-orange); font-family: monospace" id="trend-val-FI101">${rateButane_h.toFixed(0)}</span>
+            </div>
+            <canvas class="rtic-trend-canvas" id="trend-FI101"></canvas>
+            <div class="rtic-trend-legend">
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#f97316"></div>PV</div>
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#10b981"></div>SP</div>
+            </div>
+          </div>
+
+          <div class="rtic-trend-container">
+            <div class="rtic-trend-header">
+              <span class="rtic-trend-title">FI-103 — Flujo Producto MA (kg/h)</span>
+              <span style="font-size:11px; color: var(--accent-green); font-family: monospace" id="trend-val-FI103">${rateMA_h.toFixed(1)}</span>
+            </div>
+            <canvas class="rtic-trend-canvas" id="trend-FI103"></canvas>
+            <div class="rtic-trend-legend">
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#10b981"></div>PV</div>
+              <div class="rtic-trend-legend-item"><div class="rtic-trend-legend-dot" style="background:#3b82f6"></div>SP</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function initTrendCanvases() {
+      drawTrend('trend-TI101', trendData.TI_101, '#ef4444', 390, 450, 420);
+      drawTrend('trend-PI101', trendData.PI_101, '#f59e0b', 1.8, 2.4, 2.1);
+      drawTrend('trend-FI101', trendData.FI_101, '#f97316', rateButane_h * 0.85, rateButane_h * 1.15, rateButane_h);
+      drawTrend('trend-FI103', trendData.FI_103, '#10b981', rateMA_h * 0.8, rateMA_h * 1.2, rateMA_h);
+    }
+
+    function drawTrend(canvasId, data, color, minVal, maxVal, sp) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width = canvas.offsetWidth;
+      const H = canvas.height = canvas.offsetHeight;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 0.5;
+      for (let y = 0; y <= 4; y++) {
+        const py = (y / 4) * H;
+        ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+        // Labels
+        ctx.fillStyle = '#475569';
+        ctx.font = '9px Consolas';
+        ctx.fillText((maxVal - (y / 4) * (maxVal - minVal)).toFixed(1), 4, py + 10);
+      }
+
+      // SP line
+      const spY = H - ((sp - minVal) / (maxVal - minVal)) * H;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, spY); ctx.lineTo(W, spY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Data line
+      const pts = data.slice(-300);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      pts.forEach((val, i) => {
+        const x = (i / (pts.length - 1)) * W;
+        const y = H - ((val - minVal) / (maxVal - minVal)) * H;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Fill under
+      ctx.lineTo(W, H);
+      ctx.lineTo(0, H);
+      ctx.closePath();
+      ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb', 'rgba');
+      ctx.fill();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: LAZOS DE CONTROL
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderControls() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🎛️ Lazos de Control PID</span>
+            <span class="rtic-badge badge-ok">${PID_LOOPS.length} LAZOS</span>
+          </div>
+        </div>
+        <div class="grid-2">
+          ${PID_LOOPS.map(loop => {
+            const inst = Object.values(INSTRUMENTS).find(i => i.tag === loop.pv) || { value: loop.sp, unit: loop.unit };
+            const pvPct = Math.max(0, Math.min(100, ((inst.value - (loop.sp * 0.7)) / (loop.sp * 0.6)) * 100));
+            const spPct = Math.max(0, Math.min(100, ((loop.sp - (loop.sp * 0.7)) / (loop.sp * 0.6)) * 100));
+            const error = inst.value - loop.sp;
+            return `
+              <div class="rtic-pid-block">
+                <div class="rtic-pid-header">
+                  <div>
+                    <span class="rtic-pid-tag">${loop.tag}</span>
+                    <span style="font-size:11px; color: var(--text-muted); margin-left: 8px">${loop.desc}</span>
+                  </div>
+                  <span class="rtic-pid-mode ${loop.mode.toLowerCase()}">${loop.mode}</span>
+                </div>
+                <div class="rtic-pid-row">
+                  <div class="rtic-pid-param">
+                    <div class="rtic-pid-param-label">PV</div>
+                    <div class="rtic-pid-param-value color-cyan">${inst.value < 10 ? inst.value.toFixed(2) : inst.value.toFixed(1)}</div>
+                    <div style="font-size:9px; color: var(--text-muted)">${loop.unit}</div>
+                  </div>
+                  <div class="rtic-pid-param">
+                    <div class="rtic-pid-param-label">SP</div>
+                    <div class="rtic-pid-param-value color-yellow">${loop.sp < 10 ? loop.sp.toFixed(2) : loop.sp.toFixed(1)}</div>
+                    <div style="font-size:9px; color: var(--text-muted)">${loop.unit}</div>
+                  </div>
+                  <div class="rtic-pid-param">
+                    <div class="rtic-pid-param-label">Error</div>
+                    <div class="rtic-pid-param-value ${Math.abs(error) < 2 ? 'color-green' : 'color-red'}">${error >= 0 ? '+' : ''}${error.toFixed(2)}</div>
+                    <div style="font-size:9px; color: var(--text-muted)">${loop.unit}</div>
+                  </div>
+                  <div class="rtic-pid-param">
+                    <div class="rtic-pid-param-label">OUTPUT</div>
+                    <div class="rtic-pid-param-value color-purple">${loop.output}</div>
+                    <div style="font-size:9px; color: var(--text-muted)">%</div>
+                  </div>
+                </div>
+                <div class="rtic-pid-bar">
+                  <div class="rtic-pid-bar-pv" style="width: ${pvPct}%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue))"></div>
+                  <div class="rtic-pid-bar-sp" style="left: ${spPct}%"></div>
+                  <div class="rtic-pid-bar-op" style="width: ${loop.output}%"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--text-muted)">
+                  <span>Kp: ${loop.kp} | Ti: ${loop.ti}s | Td: ${loop.td}s</span>
+                  <span>CV: ${loop.cv} | Área: ${loop.area}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: EQUIPOS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderEquipment() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>⚙️ Estado de Equipos — Planta MA-100</span>
+            <span class="rtic-badge badge-ok">${EQUIPMENT.filter(e => e.status === 'OPERANDO').length}/${EQUIPMENT.length} OPERANDO</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Tag</th><th>Equipo</th><th>Tipo</th><th>Estado</th><th>Temp.</th><th>Carga</th><th>Acción</th></tr>
+              </thead>
+              <tbody>
+                ${EQUIPMENT.map(eq => `
+                  <tr>
+                    <td class="color-cyan" style="font-weight:700">${eq.tag}</td>
+                    <td style="color: var(--text-primary)">${eq.name}</td>
+                    <td>${eq.type}</td>
+                    <td><span class="rtic-badge ${eq.status === 'OPERANDO' ? 'badge-ok' : eq.status === 'ADVERTENCIA' ? 'badge-warn' : 'badge-alarm'}">${eq.status}</span></td>
+                    <td class="color-orange">${eq.temp}</td>
+                    <td>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div style="flex:1; height:6px; background: var(--bg-primary); border-radius:3px; overflow:hidden;">
+                          <div style="width:${eq.load}%; height:100%; background: ${eq.load > 90 ? 'var(--accent-red)' : eq.load > 70 ? 'var(--accent-yellow)' : 'var(--accent-green)'}; border-radius:3px;"></div>
+                        </div>
+                        <span style="font-size:10px; min-width:28px">${eq.load}%</span>
+                      </div>
+                    </td>
+                    <td><button class="rtic-btn" onclick="openFaceplate('${eq.tag}')">Detalle</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: ALARMAS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderAlarms() {
+      const active = alarmList.filter(a => a.state === 'ACTIVA');
+      const history = alarmList.filter(a => a.state !== 'ACTIVA');
+
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔔 Gestión de Alarmas</span>
+            <div style="display:flex; gap:8px;">
+              <span class="rtic-badge badge-alarm">${active.length} ACTIVAS</span>
+              <span class="rtic-badge badge-warn">${active.filter(a => !a.ack).length} SIN ACK</span>
+              <button class="rtic-btn" onclick="ackAllAlarms()">ACK Todas</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen de alarmas -->
+        <div class="rtic-kpi-row" style="margin-bottom: 12px;">
+          <div class="rtic-kpi" style="border-left-color: var(--alarm-critical)">
+            <div class="rtic-kpi-label">Críticas</div>
+            <div class="rtic-kpi-value color-red">${alarmList.filter(a => a.priority === 'CRITICA').length}</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--alarm-high)">
+            <div class="rtic-kpi-label">Alta</div>
+            <div class="rtic-kpi-value color-orange">${alarmList.filter(a => a.priority === 'ALTA').length}</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--alarm-medium)">
+            <div class="rtic-kpi-label">Media</div>
+            <div class="rtic-kpi-value color-yellow">${alarmList.filter(a => a.priority === 'MEDIA').length}</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--alarm-low)">
+            <div class="rtic-kpi-label">Baja</div>
+            <div class="rtic-kpi-value color-cyan">${alarmList.filter(a => a.priority === 'BAJA').length}</div>
+          </div>
+        </div>
+
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔴 Alarmas Activas</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Fecha/Hora</th><th>Tag</th><th>Descripción</th><th>Valor</th><th>Límite</th><th>Prioridad</th><th>ACK</th><th>Acción</th></tr>
+              </thead>
+              <tbody>
+                ${active.map(a => `
+                  <tr>
+                    <td>${a.time}</td>
+                    <td class="color-cyan" style="font-weight:700">${a.tag}</td>
+                    <td style="color: var(--text-primary)">${a.desc}</td>
+                    <td class="color-red" style="font-weight:700">${a.value}</td>
+                    <td class="color-yellow">${a.limit}</td>
+                    <td><span class="rtic-badge ${a.priority === 'CRITICA' ? 'badge-alarm' : a.priority === 'ALTA' ? 'badge-alarm' : a.priority === 'MEDIA' ? 'badge-warn' : 'badge-info'}">${a.priority}</span></td>
+                    <td><span class="rtic-badge ${a.ack ? 'badge-ok' : 'badge-alarm'}">${a.ack ? 'SÍ' : 'NO'}</span></td>
+                    <td>${!a.ack ? '<button class="rtic-btn" onclick="ackAlarm(' + a.id + ')">ACK</button>' : '—'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rtic-panel" style="margin-top: 12px;">
+          <div class="rtic-panel-header">
+            <span>📋 Historial de Alarmas (Últimas 24h)</span>
+          </div>
+          <div class="rtic-panel-body" style="max-height: 250px; overflow-y: auto;">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Fecha/Hora</th><th>Tag</th><th>Descripción</th><th>Prioridad</th><th>Estado</th></tr>
+              </thead>
+              <tbody>
+                ${alarmList.map(a => `
+                  <tr>
+                    <td>${a.time}</td>
+                    <td class="color-cyan">${a.tag}</td>
+                    <td>${a.desc}</td>
+                    <td><span class="rtic-badge ${a.priority === 'CRITICA' ? 'badge-alarm' : a.priority === 'ALTA' ? 'badge-alarm' : a.priority === 'MEDIA' ? 'badge-warn' : 'badge-info'}">${a.priority}</span></td>
+                    <td><span class="rtic-badge ${a.state === 'ACTIVA' ? 'badge-alarm' : 'badge-ok'}">${a.state}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function ackAlarm(id) {
+      const a = alarmList.find(a => a.id === id);
+      if (a) { a.ack = true; renderCurrentModule(); updateAlarmStrip(); }
+    }
+
+    function ackAllAlarms() {
+      alarmList.forEach(a => { if (a.state === 'ACTIVA') a.ack = true; });
+      renderCurrentModule(); updateAlarmStrip();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: INTERLOCKS / SIS
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderInterlocks() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔒 Sistemas Instrumentados de Seguridad (SIS) / Interlocks</span>
+            <span class="rtic-badge badge-ok">${INTERLOCKS.filter(i => i.status === 'ARMADO').length}/${INTERLOCKS.length} ARMADOS</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Tag</th><th>Descripción</th><th>Condición de Trip</th><th>Acción</th><th>Estado</th><th>Último Trip</th></tr>
+              </thead>
+              <tbody>
+                ${INTERLOCKS.map(il => `
+                  <tr>
+                    <td class="color-cyan" style="font-weight:700">${il.tag}</td>
+                    <td style="color: var(--text-primary)">${il.desc}</td>
+                    <td class="color-red" style="font-family: monospace">${il.trip}</td>
+                    <td style="font-size:10px">${il.action}</td>
+                    <td><span class="rtic-badge ${il.status === 'ARMADO' ? 'badge-ok' : 'badge-alarm'}">${il.status}</span></td>
+                    <td>${il.lastTrip}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rtic-panel" style="margin-top: 12px;">
+          <div class="rtic-panel-header">
+            <span>📊 Matriz de Causa-Efecto (Resumen SIS)</span>
+          </div>
+          <div class="rtic-panel-body" style="padding: 16px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div style="background: var(--bg-card); padding: 12px; border-radius: 4px; border-left: 3px solid var(--accent-red)">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">SIL (Safety Integrity Level)</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-yellow)">SIL-2</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Probabilidad de fallo bajo demanda: 10⁻² a 10⁻³</div>
+              </div>
+              <div style="background: var(--bg-card); padding: 12px; border-radius: 4px; border-left: 3px solid var(--accent-green)">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Disponibilidad SIS</div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent-green)">99.97%</div>
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Última prueba funcional: 2026-02-01</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: BALANCE DE MASA
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderProduction() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🏭 Balance de Masa — Producción Semanal</span>
+            <span class="rtic-badge badge-info">Período: 7 días (${PLANT.operatingHours}h)</span>
+          </div>
+        </div>
+
+        <div class="rtic-kpi-row">
+          <div class="rtic-kpi" style="border-left-color: var(--accent-yellow)">
+            <div class="rtic-kpi-label">n-Butano Alimentado</div>
+            <div class="rtic-kpi-value color-yellow">${PLANT.feedVolume.toLocaleString()} L</div>
+            <div class="rtic-kpi-sub">${massButane.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-cyan)">
+            <div class="rtic-kpi-label">O₂ Requerido (15% exc.)</div>
+            <div class="rtic-kpi-value color-cyan">${massO2.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+            <div class="rtic-kpi-sub">${(massO2/168).toFixed(0)} kg/h</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">Anhídrido Maleico</div>
+            <div class="rtic-kpi-value color-green">${massMA.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+            <div class="rtic-kpi-sub">${rateMA_h.toFixed(1)} kg/h | ${rateMA_d.toFixed(0)} kg/día</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-blue)">
+            <div class="rtic-kpi-label">Agua Producida</div>
+            <div class="rtic-kpi-value color-blue">${massH2O.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+            <div class="rtic-kpi-sub">${(massH2O/168).toFixed(1)} kg/h</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>📥 Entradas</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Componente</th><th>Masa (kg)</th><th>Moles</th><th>Flujo (kg/h)</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="color: var(--accent-yellow)">n-Butano (C₄H₁₀)</td>
+                    <td class="text-right">${massButane.toFixed(1)}</td>
+                    <td class="text-right">${molesButane.toFixed(0)}</td>
+                    <td class="text-right">${(massButane/168).toFixed(1)}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--accent-cyan)">Oxígeno (O₂)</td>
+                    <td class="text-right">${massO2.toFixed(1)}</td>
+                    <td class="text-right">${molesO2.toFixed(0)}</td>
+                    <td class="text-right">${(massO2/168).toFixed(1)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>📤 Salidas</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Componente</th><th>Masa (kg)</th><th>Moles</th><th>Flujo (kg/h)</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="color: var(--accent-green)">Anhídrido Maleico (C₄H₂O₃)</td>
+                    <td class="text-right">${massMA.toFixed(1)}</td>
+                    <td class="text-right">${molesMA.toFixed(0)}</td>
+                    <td class="text-right">${rateMA_h.toFixed(1)}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--accent-blue)">Agua (H₂O)</td>
+                    <td class="text-right">${massH2O.toFixed(1)}</td>
+                    <td class="text-right">${molesH2O.toFixed(0)}</td>
+                    <td class="text-right">${(massH2O/168).toFixed(1)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="rtic-panel">
+          <div class="rtic-panel-header"><span>📊 Rendimientos</span></div>
+          <div class="rtic-panel-body">
+            <div class="grid-3">
+              <div style="text-align:center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size:10px; color: var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Conversión</div>
+                <div style="font-size:28px; font-weight:700; color: var(--accent-green)">${(PLANT.conversion*100)}%</div>
+              </div>
+              <div style="text-align:center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size:10px; color: var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Selectividad</div>
+                <div style="font-size:28px; font-weight:700; color: var(--accent-blue)">${(PLANT.selectivity*100)}%</div>
+              </div>
+              <div style="text-align:center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size:10px; color: var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Rendimiento Global</div>
+                <div style="font-size:28px; font-weight:700; color: var(--accent-cyan)">${yieldOverall.toFixed(1)}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rtic-panel">
+          <div class="rtic-panel-header"><span>📅 Desglose Diario de Producción</span></div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead><tr><th>Día</th><th>n-Butano (L)</th><th>MA Producido (kg)</th><th>Acumulado (kg)</th><th>Eficiencia</th></tr></thead>
+              <tbody>
+                ${[1,2,3,4,5,6,7].map(d => {
+                  const dailyVol = PLANT.feedVolume / 7;
+                  const dailyMA = massMA / 7;
+                  const eff = 94 + Math.random() * 6;
+                  return `<tr>
+                    <td>Día ${d}</td>
+                    <td class="text-right">${dailyVol.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-green">${dailyMA.toFixed(1)}</td>
+                    <td class="text-right">${(dailyMA * d).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td><span class="rtic-badge badge-ok">${eff.toFixed(1)}%</span></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: ECONOMÍA
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderEconomics() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>💰 Análisis Económico Semanal</span>
+            <span class="rtic-badge ${profitMargin > 30 ? 'badge-ok' : profitMargin > 15 ? 'badge-warn' : 'badge-alarm'}">MARGEN ${profitMargin.toFixed(1)}%</span>
+          </div>
+        </div>
+
+        <div class="rtic-kpi-row">
+          <div class="rtic-kpi" style="border-left-color: var(--accent-red)">
+            <div class="rtic-kpi-label">Costo Total</div>
+            <div class="rtic-kpi-value color-red">USD ${totalCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</div>
+            <div class="rtic-kpi-sub">Semanal</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">Ingresos</div>
+            <div class="rtic-kpi-value color-green">USD ${revenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</div>
+            <div class="rtic-kpi-sub">${massMA.toFixed(0)} kg × USD ${ECO.maPrice}/kg</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-purple)">
+            <div class="rtic-kpi-label">Beneficio Neto</div>
+            <div class="rtic-kpi-value color-purple">USD ${profit.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</div>
+            <div class="rtic-kpi-sub">Margen: ${profitMargin.toFixed(1)}%</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-cyan)">
+            <div class="rtic-kpi-label">Costo por kg MA</div>
+            <div class="rtic-kpi-value color-cyan">USD ${(totalCost/massMA).toFixed(2)}</div>
+            <div class="rtic-kpi-sub">Precio venta: USD ${ECO.maPrice}/kg</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>📊 Desglose de Costos</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Concepto</th><th>Costo (USD)</th><th>% del Total</th></tr></thead>
+                <tbody>
+                  ${[
+                    { name: "n-Butano", cost: costButane },
+                    { name: "Oxígeno", cost: costO2 },
+                    { name: "Energía", cost: costEnergy },
+                    { name: "Catalizador", cost: ECO.catalystWeekly },
+                    { name: "Mano de obra", cost: ECO.laborWeekly },
+                    { name: "Mantenimiento", cost: ECO.maintWeekly },
+                  ].map(c => `
+                    <tr>
+                      <td style="color: var(--text-primary)">${c.name}</td>
+                      <td class="text-right color-yellow">${c.cost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                      <td class="text-right">
+                        <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end">
+                          <div style="width:60px; height:6px; background:var(--bg-primary); border-radius:3px; overflow:hidden">
+                            <div style="width:${(c.cost/totalCost*100)}%; height:100%; background:var(--accent-cyan); border-radius:3px"></div>
+                          </div>
+                          <span style="min-width:35px">${(c.cost/totalCost*100).toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                  <tr style="border-top: 2px solid var(--accent-blue)">
+                    <td style="color: var(--text-primary); font-weight: 700">TOTAL</td>
+                    <td class="text-right color-red" style="font-weight:700">${totalCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right" style="font-weight:700">100.0%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>📈 Proyección Mensual / Anual</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Métrica</th><th>Semanal</th><th>Mensual (4 sem)</th><th>Anual (52 sem)</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="color: var(--text-primary)">Producción MA</td>
+                    <td class="text-right">${massMA.toFixed(0)} kg</td>
+                    <td class="text-right">${(massMA*4).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</td>
+                    <td class="text-right">${(massMA*52).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--text-primary)">Ingresos</td>
+                    <td class="text-right color-green">USD ${revenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-green">USD ${(revenue*4).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-green">USD ${(revenue*52).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: var(--text-primary)">Costo Total</td>
+                    <td class="text-right color-red">USD ${totalCost.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-red">USD ${(totalCost*4).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-red">USD ${(totalCost*52).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                  </tr>
+                  <tr style="border-top: 2px solid var(--accent-green)">
+                    <td style="color: var(--text-primary); font-weight: 700">Beneficio Neto</td>
+                    <td class="text-right color-purple" style="font-weight:700">USD ${profit.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-purple" style="font-weight:700">USD ${(profit*4).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                    <td class="text-right color-purple" style="font-weight:700">USD ${(profit*52).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: CALIDAD
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderQuality() {
+      const batches = [
+        { id: "MA-2026-001", purity: 99.5, color: "Blanco", mp: 52.8, acid: 0.03, yield: 68.2, date: "2026-02-11", status: "APROBADO" },
+        { id: "MA-2026-002", purity: 99.7, color: "Blanco", mp: 53.0, acid: 0.02, yield: 69.1, date: "2026-02-12", status: "APROBADO" },
+        { id: "MA-2026-003", purity: 99.3, color: "Amarillo claro", mp: 52.5, acid: 0.05, yield: 66.5, date: "2026-02-13", status: "RECHAZADO" },
+        { id: "MA-2026-004", purity: 99.6, color: "Blanco", mp: 52.9, acid: 0.02, yield: 68.8, date: "2026-02-14", status: "APROBADO" },
+        { id: "MA-2026-005", purity: 99.8, color: "Blanco", mp: 53.1, acid: 0.01, yield: 70.2, date: "2026-02-15", status: "APROBADO" },
+        { id: "MA-2026-006", purity: 99.6, color: "Blanco", mp: 52.8, acid: 0.03, yield: 68.5, date: "2026-02-16", status: "APROBADO" },
+        { id: "MA-2026-007", purity: 99.7, color: "Blanco", mp: 53.0, acid: 0.02, yield: 69.0, date: "2026-02-17", status: "EN ANÁLISIS" },
+      ];
+
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🧪 Control de Calidad — Anhídrido Maleico</span>
+            <span class="rtic-badge badge-ok">${batches.filter(b => b.status === 'APROBADO').length}/${batches.length} APROBADOS</span>
+          </div>
+        </div>
+
+        <div class="rtic-panel">
+          <div class="rtic-panel-header"><span>📋 Especificaciones vs Real</span></div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead><tr><th>Parámetro</th><th>Especificación</th><th>Último Valor</th><th>Estado</th></tr></thead>
+              <tbody>
+                <tr><td>Pureza</td><td>≥ 99.5%</td><td class="color-green">99.7%</td><td><span class="rtic-badge badge-ok">OK</span></td></tr>
+                <tr><td>Punto de fusión</td><td>52.8 ± 0.5 °C</td><td class="color-green">53.0°C</td><td><span class="rtic-badge badge-ok">OK</span></td></tr>
+                <tr><td>Color</td><td>Blanco</td><td class="color-green">Blanco</td><td><span class="rtic-badge badge-ok">OK</span></td></tr>
+                <tr><td>Acidez libre</td><td>≤ 0.05%</td><td class="color-green">0.02%</td><td><span class="rtic-badge badge-ok">OK</span></td></tr>
+                <tr><td>Contenido de agua</td><td>≤ 0.1%</td><td class="color-green">0.04%</td><td><span class="rtic-badge badge-ok">OK</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="rtic-panel">
+          <div class="rtic-panel-header"><span>🏷️ Registro de Lotes — Semana Actual</span></div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead><tr><th>Lote</th><th>Fecha</th><th>Pureza (%)</th><th>Color</th><th>P.F. (°C)</th><th>Acidez (%)</th><th>Rend. (%)</th><th>Estado</th></tr></thead>
+              <tbody>
+                ${batches.map(b => `
+                  <tr>
+                    <td class="color-cyan" style="font-weight:700">${b.id}</td>
+                    <td>${b.date}</td>
+                    <td class="${b.purity >= 99.5 ? 'color-green' : 'color-red'}" style="font-weight:700">${b.purity}</td>
+                    <td>${b.color}</td>
+                    <td>${b.mp}</td>
+                    <td class="${b.acid <= 0.05 ? 'color-green' : 'color-red'}">${b.acid}</td>
+                    <td>${b.yield}</td>
+                    <td><span class="rtic-badge ${b.status === 'APROBADO' ? 'badge-ok' : b.status === 'RECHAZADO' ? 'badge-alarm' : 'badge-info'}">${b.status}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: BITÁCORA
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderLogbook() {
+      const typeColors = {
+        TURNO: 'color-cyan', OPER: 'color-green', ALARMA: 'color-red',
+        MAINT: 'color-yellow', CALIDAD: 'color-purple',
+      };
+
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>📋 Bitácora del Operador</span>
+            <div class="rtic-btn-group">
+              <button class="rtic-btn" onclick="addLogEntry()">+ Nueva Entrada</button>
+              <button class="rtic-btn">Exportar CSV</button>
+            </div>
+          </div>
+          <div class="rtic-panel-body" style="max-height: 600px; overflow-y: auto;">
+            ${LOGBOOK.map(entry => `
+              <div class="rtic-logbook-entry">
+                <span class="rtic-logbook-time">${entry.time}</span>
+                <span class="rtic-logbook-type ${typeColors[entry.type] || 'color-cyan'}">${entry.type}</span>
+                <span style="color: var(--text-primary)">${entry.msg}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function addLogEntry() {
+      const msg = prompt('Ingrese nota para la bitácora:');
+      if (msg) {
+        const now = new Date();
+        const ts = now.toISOString().replace('T', ' ').substring(0, 19);
+        LOGBOOK.unshift({ time: ts, type: 'OPER', msg: msg });
+        renderCurrentModule();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: IA & MACHINE LEARNING
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderAI() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🤖 Inteligencia Artificial & Machine Learning — Industria 4.0</span>
+            <div class="rtic-btn-group">
+              <button class="rtic-btn active">General</button>
+              <button class="rtic-btn">Modelos</button>
+              <button class="rtic-btn">Training</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPIs IA -->
+        <div class="rtic-kpi-row">
+          <div class="rtic-kpi" style="border-left-color: var(--accent-purple)">
+            <div class="rtic-kpi-label">Modelos Activos</div>
+            <div class="rtic-kpi-value color-purple">${Object.values(ML_MODELS).filter(m => m.status === 'ACTIVO').length}</div>
+            <div class="rtic-kpi-sub">6 modelos en producción</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">Accuracy Promedio</div>
+            <div class="rtic-kpi-value color-green">92.1%</div>
+            <div class="rtic-kpi-sub">Validación cruzada</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-cyan)">
+            <div class="rtic-kpi-label">Predicciones/hora</div>
+            <div class="rtic-kpi-value color-cyan">1,800</div>
+            <div class="rtic-kpi-sub">Latencia: 8ms</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-yellow)">
+            <div class="rtic-kpi-label">Anomalías Detectadas</div>
+            <div class="rtic-kpi-value color-yellow">${anomalies.length}</div>
+            <div class="rtic-kpi-sub">Últimas 24h</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-orange)">
+            <div class="rtic-kpi-label">Recomendaciones</div>
+            <div class="rtic-kpi-value color-orange">${recommendations.filter(r => r.status === 'PENDIENTE').length}</div>
+            <div class="rtic-kpi-sub">Pendientes de aplicar</div>
+          </div>
+          <div class="rtic-kpi" style="border-left-color: var(--accent-green)">
+            <div class="rtic-kpi-label">ROI Estimado</div>
+            <div class="rtic-kpi-value color-green">USD 3,220</div>
+            <div class="rtic-kpi-sub">/semana (si se aplican)</div>
+          </div>
+        </div>
+
+        <!-- PREDICCIONES EN TIEMPO REAL -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🔮 Predicciones en Tiempo Real (LSTM)</span>
+            <span class="rtic-badge badge-ok">MODELO ACTIVO</span>
+          </div>
+          <div class="rtic-panel-body">
+            <div class="grid-2">
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 4px; border-left: 3px solid var(--accent-red)">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Temperatura Reactor (TI-101)</div>
+                    <div style="font-size: 12px; color: var(--accent-cyan); margin-top: 4px;">Modelo: ${ML_MODELS.tempPredictor.name}</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 10px; color: var(--text-muted);">Accuracy</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--accent-green);">${ML_MODELS.tempPredictor.accuracy}%</div>
+                  </div>
+                </div>
+                <table class="rtic-table" style="font-size: 11px; margin-top: 8px;">
+                  <thead><tr><th>Horizonte</th><th>Valor Actual</th><th>Predicción</th><th>Δ</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>+5 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.TI_101.value.toFixed(1)}°C</td>
+                      <td class="color-green">${predictions.temperature.next5min}°C</td>
+                      <td class="${predictions.temperature.next5min > INSTRUMENTS.TI_101.value ? 'color-red' : 'color-green'}">${(predictions.temperature.next5min - INSTRUMENTS.TI_101.value).toFixed(1)}</td>
+                    </tr>
+                    <tr>
+                      <td>+15 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.TI_101.value.toFixed(1)}°C</td>
+                      <td class="color-green">${predictions.temperature.next15min}°C</td>
+                      <td class="${predictions.temperature.next15min > INSTRUMENTS.TI_101.value ? 'color-red' : 'color-green'}">${(predictions.temperature.next15min - INSTRUMENTS.TI_101.value).toFixed(1)}</td>
+                    </tr>
+                    <tr>
+                      <td>+30 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.TI_101.value.toFixed(1)}°C</td>
+                      <td class="color-green">${predictions.temperature.next30min}°C</td>
+                      <td class="${predictions.temperature.next30min > INSTRUMENTS.TI_101.value ? 'color-red' : 'color-green'}">${(predictions.temperature.next30min - INSTRUMENTS.TI_101.value).toFixed(1)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; padding: 6px; background: rgba(16,185,129,0.1); border-radius: 3px; font-size: 10px; color: var(--accent-green);">
+                  ✓ Confianza: ${predictions.temperature.confidence}% | RMSE: 1.2°C
+                </div>
+              </div>
+
+              <div style="background: var(--bg-card); padding: 16px; border-radius: 4px; border-left: 3px solid var(--accent-yellow)">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <div>
+                    <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Presión Reactor (PI-101)</div>
+                    <div style="font-size: 12px; color: var(--accent-cyan); margin-top: 4px;">Modelo: ${ML_MODELS.tempPredictor.name}</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 10px; color: var(--text-muted);">Accuracy</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--accent-green);">${ML_MODELS.tempPredictor.accuracy}%</div>
+                  </div>
+                </div>
+                <table class="rtic-table" style="font-size: 11px; margin-top: 8px;">
+                  <thead><tr><th>Horizonte</th><th>Valor Actual</th><th>Predicción</th><th>Δ</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>+5 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.PI_101.value.toFixed(2)} bar</td>
+                      <td class="color-green">${predictions.pressure.next5min} bar</td>
+                      <td class="${predictions.pressure.next5min > INSTRUMENTS.PI_101.value ? 'color-red' : 'color-green'}">${(predictions.pressure.next5min - INSTRUMENTS.PI_101.value).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td>+15 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.PI_101.value.toFixed(2)} bar</td>
+                      <td class="color-green">${predictions.pressure.next15min} bar</td>
+                      <td class="${predictions.pressure.next15min > INSTRUMENTS.PI_101.value ? 'color-red' : 'color-green'}">${(predictions.pressure.next15min - INSTRUMENTS.PI_101.value).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td>+30 min</td>
+                      <td class="color-cyan">${INSTRUMENTS.PI_101.value.toFixed(2)} bar</td>
+                      <td class="color-green">${predictions.pressure.next30min} bar</td>
+                      <td class="${predictions.pressure.next30min > INSTRUMENTS.PI_101.value ? 'color-red' : 'color-green'}">${(predictions.pressure.next30min - INSTRUMENTS.PI_101.value).toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="margin-top: 8px; padding: 6px; background: rgba(16,185,129,0.1); border-radius: 3px; font-size: 10px; color: var(--accent-green);">
+                  ✓ Confianza: ${predictions.pressure.confidence}% | RMSE: 0.03 bar
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPTIMIZACIÓN DE RENDIMIENTO -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🎯 Optimización de Rendimiento (Gradient Boosting)</span>
+            <span class="rtic-badge ${predictions.yield.optimizable ? 'badge-warn' : 'badge-ok'}">${predictions.yield.optimizable ? 'OPTIMIZABLE' : 'ÓPTIMO'}</span>
+          </div>
+          <div class="rtic-panel-body">
+            <div class="grid-3">
+              <div style="text-align: center; padding: 16px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Rendimiento Actual</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--accent-cyan);">${predictions.yield.current}%</div>
+              </div>
+              <div style="text-align: center; padding: 16px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Rendimiento Predicho</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--accent-green);">${predictions.yield.predicted}%</div>
+              </div>
+              <div style="text-align: center; padding: 16px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">Ganancia Potencial</div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--accent-purple);">+${predictions.yield.potentialGain}%</div>
+              </div>
+            </div>
+            <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-left: 3px solid var(--accent-purple); border-radius: 4px;">
+              <div style="font-size: 12px; font-weight: 600; color: var(--accent-purple); margin-bottom: 6px;">💡 Recomendación del modelo:</div>
+              <div style="font-size: 11px; color: var(--text-secondary);">Ajustar temperatura de ${PLANT.temperature}°C a 423°C y reducir exceso O₂ de 15% a 12% para maximizar rendimiento. Ganancia estimada: +${predictions.yield.potentialGain}% (hasta ${predictions.yield.predicted}%)</div>
+              <div style="margin-top: 8px; display: flex; gap: 8px;">
+                <button class="rtic-btn" onclick="applyRecommendation(1)">Aplicar Cambios</button>
+                <button class="rtic-btn">Simular Impacto</button>
+                <button class="rtic-btn">Ver Detalles</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETECCIÓN DE ANOMALÍAS -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>⚠️ Detección de Anomalías (Isolation Forest)</span>
+            <span class="rtic-badge ${anomalies.length > 0 ? 'badge-warn' : 'badge-ok'}">${anomalies.length} DETECTADAS</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Timestamp</th><th>Tag</th><th>Descripción</th><th>Score</th><th>Severidad</th><th>Acción Recomendada</th></tr>
+              </thead>
+              <tbody>
+                ${anomalies.map(a => `
+                  <tr>
+                    <td>${a.time}</td>
+                    <td class="color-cyan" style="font-weight: 700;">${a.tag}</td>
+                    <td>${a.desc}</td>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="width: 60px; height: 6px; background: var(--bg-primary); border-radius: 3px; overflow: hidden;">
+                          <div style="width: ${a.score * 100}%; height: 100%; background: ${a.score > 0.85 ? 'var(--accent-red)' : a.score > 0.7 ? 'var(--accent-yellow)' : 'var(--accent-green)'}; border-radius: 3px;"></div>
+                        </div>
+                        <span style="font-family: monospace; font-size: 11px;">${a.score.toFixed(2)}</span>
+                      </div>
+                    </td>
+                    <td><span class="rtic-badge ${a.severity === 'ALTA' ? 'badge-alarm' : a.severity === 'MEDIA' ? 'badge-warn' : 'badge-info'}">${a.severity}</span></td>
+                    <td style="font-size: 11px;">${a.action}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RECOMENDACIONES INTELIGENTES -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>💡 Recomendaciones Inteligentes</span>
+            <span class="rtic-badge badge-info">${recommendations.filter(r => r.status === 'PENDIENTE').length} PENDIENTES</span>
+          </div>
+          <div class="rtic-panel-body">
+            ${recommendations.map(rec => `
+              <div style="background: var(--bg-card); padding: 14px; border-radius: 4px; margin-bottom: 12px; border-left: 3px solid ${rec.priority === 'ALTA' ? 'var(--accent-red)' : rec.priority === 'MEDIA' ? 'var(--accent-yellow)' : 'var(--accent-cyan)'}">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                      <span class="rtic-badge ${rec.priority === 'ALTA' ? 'badge-alarm' : rec.priority === 'MEDIA' ? 'badge-warn' : 'badge-info'}">${rec.priority}</span>
+                      <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">${rec.type}</span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;">${rec.title}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">${rec.desc}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; font-size: 10px;">
+                      <div><span style="color: var(--text-muted);">Impacto:</span> <span style="color: var(--accent-green); font-weight: 600;">${rec.impact}</span></div>
+                      <div><span style="color: var(--text-muted);">Confianza:</span> <span style="color: var(--accent-cyan); font-weight: 600;">${rec.confidence}%</span></div>
+                      ${rec.roi ? `<div><span style="color: var(--text-muted);">ROI:</span> <span style="color: var(--accent-purple); font-weight: 600;">${rec.roi}</span></div>` : ''}
+                      <div><span style="color: var(--text-muted);">Riesgo:</span> <span class="rtic-badge ${rec.risk === 'BAJO' ? 'badge-ok' : rec.risk === 'MEDIO' ? 'badge-warn' : 'badge-alarm'}" style="padding: 1px 6px; font-size: 9px;">${rec.risk}</span></div>
+                    </div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 4px;">Confianza</div>
+                    <div style="font-size: 24px; font-weight: 700; color: var(--accent-green);">${rec.confidence}%</div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; margin-top: 10px;">
+                  ${rec.autoApply !== undefined ? `<button class="rtic-btn" onclick="applyRecommendation(${rec.id})">✓ Aplicar</button>` : ''}
+                  <button class="rtic-btn">Ver Análisis Completo</button>
+                  <button class="rtic-btn">Descartar</button>
+                  <button class="rtic-btn">Posponer</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- CLUSTERING DE REGÍMENES OPERATIVOS -->
+          <div class="rtic-panel">
+            <div class="rtic-panel-header">
+              <span>📊 Regímenes Operativos (K-Means)</span>
+            </div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Régimen</th><th>Frecuencia</th><th>Rend. Prom.</th><th>T Prom.</th></tr></thead>
+                <tbody>
+                  ${operatingRegimes.map(reg => `
+                    <tr>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <div style="width: 12px; height: 12px; background: ${reg.color}; border-radius: 50%;"></div>
+                          <span style="font-weight: 600;">${reg.name}</span>
+                        </div>
+                      </td>
+                      <td>${reg.frequency} puntos</td>
+                      <td class="${reg.avgYield > 68 ? 'color-green' : reg.avgYield > 65 ? 'color-yellow' : 'color-red'}" style="font-weight: 700;">${reg.avgYield}%</td>
+                      <td class="color-orange">${reg.avgTemp}°C</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+              <div style="margin-top: 12px; padding: 10px; background: rgba(16,185,129,0.1); border-radius: 4px; font-size: 11px; color: var(--accent-green);">
+                ✓ Régimen actual: <strong>Normal Estable</strong> (Cluster 1) — Silhouette Score: ${ML_MODELS.regimeClassifier.silhouetteScore}
+              </div>
+            </div>
+          </div>
+
+          <!-- MANTENIMIENTO PREDICTIVO -->
+          <div class="rtic-panel">
+            <div class="rtic-panel-header">
+              <span>🔧 Mantenimiento Predictivo (Random Forest)</span>
+            </div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Equipo</th><th>Estado Predicho</th><th>Prob. Falla</th><th>TBF Estimado</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="color-cyan" style="font-weight: 700;">P-101 (Bomba)</td>
+                    <td><span class="rtic-badge badge-warn">WARNING</span></td>
+                    <td class="color-yellow" style="font-weight: 700;">23%</td>
+                    <td class="color-orange">72h</td>
+                  </tr>
+                  <tr>
+                    <td class="color-cyan" style="font-weight: 700;">E-102 (Enfriador)</td>
+                    <td><span class="rtic-badge badge-ok">OK</span></td>
+                    <td class="color-green" style="font-weight: 700;">2%</td>
+                    <td class="color-green">850h</td>
+                  </tr>
+                  <tr>
+                    <td class="color-cyan" style="font-weight: 700;">R-101 (Reactor)</td>
+                    <td><span class="rtic-badge badge-ok">OK</span></td>
+                    <td class="color-green" style="font-weight: 700;">1%</td>
+                    <td class="color-green">1,200h</td>
+                  </tr>
+                  <tr>
+                    <td class="color-cyan" style="font-weight: 700;">T-101 (Absorbedor)</td>
+                    <td><span class="rtic-badge badge-warn">WARNING</span></td>
+                    <td class="color-yellow" style="font-weight: 700;">15%</td>
+                    <td class="color-yellow">120h</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODELOS ML -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🧠 Modelos de Machine Learning</span>
+            <span class="rtic-badge badge-ok">${Object.values(ML_MODELS).filter(m => m.status === 'ACTIVO').length}/6 ACTIVOS</span>
+          </div>
+          <div class="rtic-panel-body">
+            <table class="rtic-table">
+              <thead>
+                <tr><th>Modelo</th><th>Tipo</th><th>Métrica</th><th>Último Entrenamiento</th><th>Estado</th><th>Acción</th></tr>
+              </thead>
+              <tbody>
+                ${Object.values(ML_MODELS).map(model => `
+                  <tr>
+                    <td style="color: var(--accent-cyan); font-weight: 600;">${model.name}</td>
+                    <td style="font-size: 10px;">${model.type}</td>
+                    <td>
+                      ${model.accuracy ? `<span class="color-green">${model.accuracy}% accuracy</span>` : ''}
+                      ${model.precision ? `<span class="color-green">${model.precision}% precision</span>` : ''}
+                      ${model.silhouetteScore ? `<span class="color-green">${model.silhouetteScore} silhouette</span>` : ''}
+                    </td>
+                    <td style="font-size: 11px; font-family: monospace;">${model.lastTrained}</td>
+                    <td><span class="rtic-badge ${model.status === 'ACTIVO' ? 'badge-ok' : 'badge-info'}">${model.status}</span></td>
+                    <td><button class="rtic-btn">⚙️ Config</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- INSIGHTS ML -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>💡 Insights de IA</span>
+          </div>
+          <div class="rtic-panel-body">
+            <div style="display: grid; gap: 10px;">
+              ${mlInsights.map(insight => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-card); border-radius: 4px; border-left: 3px solid var(--accent-blue);">
+                  <div style="font-size: 20px;">${insight.icon}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">${insight.text}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- MPC Controller -->
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>🎛️ Control Predictivo por Modelo (MPC)</span>
+            <span class="rtic-badge badge-info">${ML_MODELS.mpcController.status}</span>
+          </div>
+          <div class="rtic-panel-body">
+            <div style="padding: 12px; background: rgba(59,130,246,0.1); border-left: 3px solid var(--accent-blue); border-radius: 4px; margin-bottom: 12px;">
+              <div style="font-size: 12px; color: var(--accent-blue); font-weight: 600; margin-bottom: 6px;">ℹ️ Model Predictive Controller</div>
+              <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.5;">
+                El MPC optimiza múltiples variables simultáneamente considerando restricciones operativas y objetivos económicos. 
+                Horizonte de predicción: ${ML_MODELS.mpcController.horizon} pasos | Intervalo de control: ${ML_MODELS.mpcController.controlInterval}s
+              </div>
+            </div>
+            <div class="grid-3">
+              <div style="text-align: center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 10px; color: var(--text-muted);">Estado</div>
+                <div style="font-size: 16px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px;">${ML_MODELS.mpcController.status}</div>
+              </div>
+              <div style="text-align: center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 10px; color: var(--text-muted);">Restricciones</div>
+                <div style="font-size: 16px; font-weight: 700; color: var(--accent-purple); margin-top: 4px;">${ML_MODELS.mpcController.constraints}</div>
+              </div>
+              <div style="text-align: center; padding: 12px; background: var(--bg-card); border-radius: 4px;">
+                <div style="font-size: 10px; color: var(--text-muted);">Objetivos</div>
+                <div style="font-size: 16px; font-weight: 700; color: var(--accent-green); margin-top: 4px;">${ML_MODELS.mpcController.objectives}</div>
+              </div>
+            </div>
+            <div style="margin-top: 12px; text-align: center;">
+              <button class="rtic-btn" onclick="alert('MPC Controller activado. Modo de control predictivo iniciado.')">🚀 Activar MPC</button>
+              <button class="rtic-btn">Configurar Parámetros</button>
+              <button class="rtic-btn">Ver Simulación</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function applyRecommendation(id) {
+      const rec = recommendations.find(r => r.id === id);
+      if (rec) {
+        if (confirm(`¿Aplicar recomendación: "${rec.title}"?\n\n${rec.desc}\n\nImpacto: ${rec.impact}\nConfianza: ${rec.confidence}%`)) {
+          rec.status = 'APLICADA';
+          alert('✓ Recomendación aplicada exitosamente. Los cambios se reflejarán en el proceso.');
+          renderCurrentModule();
+        }
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RENDER: REPORTES
+    // ═══════════════════════════════════════════════════════════════════
+
+    function renderReports() {
+      return `
+        <div class="rtic-panel">
+          <div class="rtic-panel-header">
+            <span>📄 Reportes de Producción</span>
+            <div class="rtic-btn-group">
+              <button class="rtic-btn active">Semanal</button>
+              <button class="rtic-btn">Mensual</button>
+              <button class="rtic-btn">Anual</button>
+              <button class="rtic-btn" onclick="window.print()">🖨️ Imprimir</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rtic-report-summary">
+          <div class="rtic-report-card">
+            <h4>Producción Total</h4>
+            <div class="value color-green">${massMA.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg</div>
+            <div style="font-size:11px; color: var(--text-muted); margin-top:4px">Meta: ${(massMA * 1.05).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} kg (${(100/1.05).toFixed(1)}% cumplimiento)</div>
+          </div>
+          <div class="rtic-report-card">
+            <h4>Disponibilidad Planta</h4>
+            <div class="value color-cyan">98.2%</div>
+            <div style="font-size:11px; color: var(--text-muted); margin-top:4px">Horas operativas: ${(168 * 0.982).toFixed(0)} / ${PLANT.operatingHours}</div>
+          </div>
+          <div class="rtic-report-card">
+            <h4>OEE (Overall Equipment Effectiveness)</h4>
+            <div class="value color-purple">91.5%</div>
+            <div style="font-size:11px; color: var(--text-muted); margin-top:4px">Disp. 98.2% × Rend. 95% × Cal. 98%</div>
+          </div>
+          <div class="rtic-report-card">
+            <h4>Consumo Energético</h4>
+            <div class="value color-orange">${(1890 * 168 / 1000).toFixed(0)} MWh</div>
+            <div style="font-size:11px; color: var(--text-muted); margin-top:4px">${(1890 * 168 / 1000 / massMA * 1000).toFixed(1)} kWh/ton MA</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>⏱️ Indicadores de Rendimiento</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>KPI</th><th>Valor</th><th>Meta</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr><td>Rendimiento global</td><td class="color-green">${yieldOverall.toFixed(1)}%</td><td>60%</td><td><span class="rtic-badge badge-ok">✓</span></td></tr>
+                  <tr><td>Consumo específico n-butano</td><td class="color-cyan">${(massButane/massMA).toFixed(2)} kg/kg MA</td><td>< 1.6</td><td><span class="rtic-badge badge-ok">✓</span></td></tr>
+                  <tr><td>Tasa de alarmas</td><td class="color-yellow">${(alarmList.length / 7).toFixed(1)} /día</td><td>< 3.0</td><td><span class="rtic-badge badge-ok">✓</span></td></tr>
+                  <tr><td>Tiempo medio entre fallas</td><td class="color-green">850 h</td><td>> 500 h</td><td><span class="rtic-badge badge-ok">✓</span></td></tr>
+                  <tr><td>Calidad (lotes aprobados)</td><td class="color-green">85.7%</td><td>≥ 90%</td><td><span class="rtic-badge badge-warn">⚠</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rtic-panel">
+            <div class="rtic-panel-header"><span>🔄 Paradas / Intervenciones</span></div>
+            <div class="rtic-panel-body">
+              <table class="rtic-table">
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Duración</th><th>Causa</th></tr></thead>
+                <tbody>
+                  <tr><td>2026-02-14</td><td><span class="rtic-badge badge-warn">Planificada</span></td><td>2.0 h</td><td>Inspección filtros F-101/F-102</td></tr>
+                  <tr><td>2026-02-12</td><td><span class="rtic-badge badge-alarm">No planif.</span></td><td>0.5 h</td><td>Trip SIS-001 por pico temp.</td></tr>
+                  <tr><td>2026-02-11</td><td><span class="rtic-badge badge-warn">Planificada</span></td><td>1.0 h</td><td>Calibración instrumentos TI/PI</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // FACEPLATE (Tag Detail Popup)
+    // ═══════════════════════════════════════════════════════════════════
+
+    function openFaceplate(tag) {
+      const inst = Object.values(INSTRUMENTS).find(i => i.tag === tag);
+      const eq = EQUIPMENT.find(e => e.tag === tag);
+      const overlay = document.getElementById('faceplate-overlay');
+      const faceplate = document.getElementById('faceplate');
+      const content = document.getElementById('faceplate-content');
+
+      if (inst) {
+        content.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:monospace; font-size:16px; font-weight:700; color: var(--accent-cyan)">${inst.tag}</span>
+            <button class="rtic-btn" onclick="closeFaceplate()">✕</button>
+          </div>
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px">${inst.desc} — ${inst.area}</div>
+          <div style="text-align:center; margin: 16px 0;">
+            <div style="font-size:36px; font-weight:700; color: var(--accent-green)">${typeof inst.value === 'number' ? (inst.value < 10 ? inst.value.toFixed(2) : inst.value.toFixed(1)) : inst.value}</div>
+            <div style="font-size:12px; color: var(--text-muted)">${inst.unit}</div>
+          </div>
+          <table class="rtic-table" style="font-size:11px">
+            <tr><td>SP (Setpoint)</td><td class="text-right color-yellow">${inst.sp} ${inst.unit}</td></tr>
+            <tr><td>HI (Alarma alta)</td><td class="text-right color-orange">${inst.hi} ${inst.unit}</td></tr>
+            <tr><td>HIHI (Muy alta)</td><td class="text-right color-red">${inst.hihi} ${inst.unit}</td></tr>
+            <tr><td>LO (Alarma baja)</td><td class="text-right color-orange">${inst.lo} ${inst.unit}</td></tr>
+            <tr><td>LOLO (Muy baja)</td><td class="text-right color-red">${inst.lolo} ${inst.unit}</td></tr>
+          </table>
+        `;
+      } else if (eq) {
+        content.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-family:monospace; font-size:16px; font-weight:700; color: var(--accent-cyan)">${eq.tag}</span>
+            <button class="rtic-btn" onclick="closeFaceplate()">✕</button>
+          </div>
+          <div style="font-size:13px; color:var(--text-primary); font-weight:600; margin-bottom:4px">${eq.name}</div>
+          <div style="font-size:11px; color:var(--text-muted); margin-bottom:12px">${eq.type}</div>
+          <table class="rtic-table" style="font-size:11px">
+            <tr><td>Estado</td><td><span class="rtic-badge ${eq.status === 'OPERANDO' ? 'badge-ok' : 'badge-warn'}">${eq.status}</span></td></tr>
+            <tr><td>Temperatura</td><td class="text-right color-orange">${eq.temp}</td></tr>
+            <tr><td>Carga</td><td class="text-right color-cyan">${eq.load}%</td></tr>
+          </table>
+        `;
+      }
+
+      overlay.classList.add('open');
+      faceplate.classList.add('open');
+    }
+
+    function closeFaceplate() {
+      document.getElementById('faceplate-overlay').classList.remove('open');
+      document.getElementById('faceplate').classList.remove('open');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ALARM STRIP
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateAlarmStrip() {
+      const active = alarmList.filter(a => a.state === 'ACTIVA');
+      const strip = document.getElementById('alarm-strip-inner');
+      const count = document.getElementById('alarm-strip-count');
+      const badge = document.getElementById('alarm-badge');
+
+      count.textContent = `${active.length} ACTIVAS`;
+      if (badge) badge.textContent = active.length;
+
+      strip.innerHTML = active.map(a => {
+        const cls = a.priority === 'CRITICA' ? 'critical' : a.priority === 'ALTA' ? 'high' : a.priority === 'MEDIA' ? 'medium' : 'low';
+        return `<span class="alarm-strip-item ${cls}">[${a.time.split(' ')[1]}] ${a.tag}: ${a.desc} — ${a.value}</span>`;
+      }).join('') + alarmList.filter(a => a.state !== 'ACTIVA').slice(0, 3).map(a => {
+        return `<span class="alarm-strip-item low">[${a.time.split(' ')[1]}] ${a.tag}: RET ${a.desc}</span>`;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RELOJ
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('rtic-clock').textContent = `${h}:${m}:${s}`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SIMULACIÓN EN TIEMPO REAL
+    // ═══════════════════════════════════════════════════════════════════
+
+    function updateLiveData() {
+      const n = () => (Math.random() - 0.5) * 2;
+
+      // Update instruments
+      Object.values(INSTRUMENTS).forEach(inst => {
+        if (typeof inst.value !== 'number') return;
+        const range = (inst.hi - inst.lo) * 0.05;
+        inst.value = inst.sp + n() * range;
+        // Occasionally wander further
+        if (Math.random() < 0.02) inst.value = inst.sp + n() * range * 3;
+      });
+
+      // Push trend data
+      trendData.TI_101.push(INSTRUMENTS.TI_101.value);
+      trendData.PI_101.push(INSTRUMENTS.PI_101.value);
+      trendData.FI_101.push(INSTRUMENTS.FI_101.value);
+      trendData.FI_103.push(INSTRUMENTS.FI_103.value);
+      trendData.AI_101.push(INSTRUMENTS.AI_101.value);
+      trendData.LI_101.push(INSTRUMENTS.LI_101.value);
+
+      // Keep 300 points
+      Object.values(trendData).forEach(arr => { if (arr.length > 300) arr.shift(); });
+
+      // Update PID outputs
+      PID_LOOPS.forEach(loop => {
+        if (loop.mode !== 'MANUAL') {
+          loop.output = Math.max(0, Math.min(100, loop.output + n() * 2));
+        }
+      });
+
+      // Refresh current view
+      renderCurrentModule();
+    }
+
+    // Update synoptic SVG values directly (more efficient)
+    function updateSynopticTags() {
+      const updates = {
+        'syn-TI101': INSTRUMENTS.TI_101.value.toFixed(0) + '°C',
+        'syn-TI102': INSTRUMENTS.TI_102.value.toFixed(0) + '°C',
+        'syn-TI103': INSTRUMENTS.TI_103.value.toFixed(0) + '°C',
+        'syn-TI106': INSTRUMENTS.TI_106.value.toFixed(0) + '°C',
+        'syn-TI107': INSTRUMENTS.TI_107.value.toFixed(0) + '°C',
+        'syn-PI101': INSTRUMENTS.PI_101.value.toFixed(2) + ' bar',
+        'syn-FI101': INSTRUMENTS.FI_101.value.toFixed(0) + ' L/h',
+        'syn-FI102': INSTRUMENTS.FI_102.value.toFixed(0) + ' kg/h',
+        'syn-FI103': INSTRUMENTS.FI_103.value.toFixed(1) + ' kg/h',
+        'syn-LI101': INSTRUMENTS.LI_101.value.toFixed(0) + '%',
+        'syn-LI102': INSTRUMENTS.LI_102.value.toFixed(0) + '%',
+        'syn-LI103': INSTRUMENTS.LI_103.value.toFixed(0) + '%',
+        'syn-AI101': INSTRUMENTS.AI_101.value.toFixed(1) + '%',
+      };
+      Object.entries(updates).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      });
+
+      // Update trend value labels
+      const trendUpdates = {
+        'trend-val-TI101': INSTRUMENTS.TI_101.value.toFixed(1),
+        'trend-val-PI101': INSTRUMENTS.PI_101.value.toFixed(2),
+        'trend-val-FI101': INSTRUMENTS.FI_101.value.toFixed(0),
+        'trend-val-FI103': INSTRUMENTS.FI_103.value.toFixed(1),
+      };
+      Object.entries(trendUpdates).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // INICIALIZACIÓN
+    // ═══════════════════════════════════════════════════════════════════
+
+    // Render initial view
+    renderCurrentModule();
+    updateAlarmStrip();
+    updateClock();
+
+    // Timers
+    setInterval(updateClock, 1000);
+    setInterval(() => {
+      updateLiveData();
+      updateSynopticTags();
+      updateAlarmStrip();
+    }, 2000);
+
+    console.log('╔═══════════════════════════════════════════════════════════╗');
+    console.log('║  RTIC — Sistema de Control e Información en Tiempo Real  ║');
+    console.log('║  Planta MA-100 — Anhídrido Maleico                      ║');
+    console.log('║  Producción: ' + massMA.toFixed(0) + ' kg/semana                          ║');
+    console.log('╚═══════════════════════════════════════════════════════════╝');
+  </script>
+</body>
+</html>

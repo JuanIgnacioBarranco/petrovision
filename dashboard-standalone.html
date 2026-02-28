@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Anhídrido Maleico</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #0a0e1a;
+      color: #f3f4f6;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      margin-bottom: 32px;
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #1f2937;
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 12px 24px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      color: #f3f4f6;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover {
+      border-color: #3b82f6;
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #f3f4f6;
+      border-left: 4px solid #3b82f6;
+      padding-left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #111827 0%, rgba(59, 130, 246, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .stat-unit {
+      font-size: 16px;
+      margin-left: 6px;
+      color: #9ca3af;
+    }
+
+    .stat-trend {
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      color: #f3f4f6;
+      margin-bottom: 16px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .badge-success { background: #10b981; color: #fff; }
+    .badge-warning { background: #f59e0b; color: #000; }
+    .badge-danger { background: #ef4444; color: #fff; }
+    .badge-info { background: #06b6d4; color: #fff; }
+
+    .equation {
+      text-align: center;
+      font-size: 24px;
+      font-family: monospace;
+      color: #f3f4f6;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin: 20px 0;
+    }
+
+    .equation-info {
+      text-align: center;
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 12px;
+    }
+
+    .result-box {
+      background: #111827;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .result-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: #10b981;
+      font-family: monospace;
+    }
+
+    .result-desc {
+      font-size: 16px;
+      color: #9ca3af;
+      margin-top: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .metric-box {
+      padding: 16px;
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 4px solid #3b82f6;
+      border-radius: 8px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .table th {
+      padding: 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .table td {
+      padding: 12px;
+      border-bottom: 1px solid #1f2937;
+      font-size: 13px;
+    }
+
+    .table tbody tr:nth-child(even) {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .live-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .process-stage {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .process-stage.warning {
+      border-color: #f59e0b;
+    }
+
+    .process-stage.normal {
+      border-color: #10b981;
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stage-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .stage-details {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .color-primary { color: #3b82f6; }
+    .color-secondary { color: #06b6d4; }
+    .color-success { color: #10b981; }
+    .color-warning { color: #f59e0b; }
+    .color-danger { color: #ef4444; }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #1f2937;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+      transition: width 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚗️ PRODUCCIÓN DE ANHÍDRIDO MALEICO</h1>
+      <p class="subtitle">Sistema de Monitoreo y Control Industrial | Oxidación Catalítica de n-Butano</p>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn active" onclick="showView('production')">🏭 Producción</button>
+      <button class="nav-btn" onclick="showView('reactor')">⚛️ Reactor</button>
+      <button class="nav-btn" onclick="showView('quality')">✓ Calidad</button>
+      <button class="nav-btn" onclick="showView('economics')">💰 Economía</button>
+    </div>
+
+    <div id="production" class="view active"></div>
+    <div id="reactor" class="view"></div>
+    <div id="quality" class="view"></div>
+    <div id="economics" class="view"></div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════
+    // ANHÍDRIDO MALEICO - Dashboard de Producción Industrial
+    // Reacción: C4H10 + 3.5 O2 → C4H2O3 + 4 H2O
+    // ═══════════════════════════════════════════════════════════════════
+
+    // ═══════════════════════════════════════════════════════════════════
+    // ANHÍDRIDO MALEICO - Dashboard de Producción Industrial
+    // Reacción: C4H10 + 3.5 O2 → C4H2O3 + 4 H2O
+    // ═══════════════════════════════════════════════════════════════════
+
+    // CONSTANTES ESTEQUIOMÉTRICAS
+    const MOLECULAR_WEIGHTS = {
+      nButane: 58.12,
+      oxygen: 32.00,
+      maleicAnhydride: 98.06,
+      water: 18.02,
+    };
+
+    const STOICH_RATIOS = {
+      oxygenToButane: 3.5,
+      maleicToButane: 1.0,
+      waterToButane: 4.0,
+    };
+
+    // DATOS DE PRODUCCIÓN
+    const PRODUCTION_DATA = {
+      nButaneVolume: 1000,
+      nButaneDensity: 0.573,
+      reactionYield: 68,
+      theoreticalYield: 100,
+      temperature: 420,
+      pressure: 2.1,
+      oxygenExcess: 15,
+      catalystType: "V2O5-MoO3",
+      conversionRate: 95,
+    };
+
+    // CÁLCULOS ESTEQUIOMÉTRICOS
+    const calculateProduction = () => {
+      const massButane = PRODUCTION_DATA.nButaneVolume * PRODUCTION_DATA.nButaneDensity;
+      const massButaneGrams = massButane * 1000;
+      const molesButane = massButaneGrams / MOLECULAR_WEIGHTS.nButane;
+      const molesMATheoretical = molesButane * STOICH_RATIOS.maleicToButane;
+      const massMATheoretical = molesMATheoretical * MOLECULAR_WEIGHTS.maleicAnhydride;
+      const massMAReal = massMATheoretical * 
+                         (PRODUCTION_DATA.conversionRate / 100) * 
+                         (PRODUCTION_DATA.reactionYield / 100);
+      const molesO2Theoretical = molesButane * STOICH_RATIOS.oxygenToButane;
+      const molesO2Real = molesO2Theoretical * (1 + PRODUCTION_DATA.oxygenExcess / 100);
+      const massO2Real = molesO2Real * MOLECULAR_WEIGHTS.oxygen;
+      const molesWater = molesButane * STOICH_RATIOS.waterToButane * (PRODUCTION_DATA.conversionRate / 100);
+      const massWater = molesWater * MOLECULAR_WEIGHTS.water;
+      
+      return {
+        input: {
+          butaneMass: massButane,
+          butaneMoles: molesButane,
+          oxygenMass: massO2Real / 1000,
+          oxygenMoles: molesO2Real,
+        },
+        output: {
+          maleicAnhydrideMass: massMAReal / 1000,
+          maleicAnhydrideMoles: (massMAReal / MOLECULAR_WEIGHTS.maleicAnhydride),
+          waterMass: massWater / 1000,
+          waterMoles: molesWater,
+        },
+        theoretical: {
+          maleicAnhydrideMass: massMATheoretical / 1000,
+        },
+        yields: {
+          conversion: PRODUCTION_DATA.conversionRate,
+          selectivity: PRODUCTION_DATA.reactionYield,
+          overall: (PRODUCTION_DATA.conversionRate * PRODUCTION_DATA.reactionYield) / 100,
+        }
+      };
+    };
+
+    const CALC = calculateProduction();
+
+    // DATOS DE MONITOREO DEL REACTOR
+    const generateReactorData = () => {
+      const data = [];
+      for (let h = 0; h < 24; h++) {
+        const noise = () => (Math.random() - 0.5) * 2;
+        data.push({
+          hour: `${h}:00`,
+          temperature: 420 + noise() * 8,
+          pressure: 2.1 + noise() * 0.15,
+          butaneFlow: 42 + noise() * 3,
+          oxygenFlow: 147 + noise() * 8,
+          yield: 68 + noise() * 4,
+          conversion: 95 + noise() * 2,
+        });
+      }
+      return data;
+    };
+
+    const REACTOR_HISTORY = generateReactorData();
+
+    const PROCESS_STAGES = [
+      { name: "Vaporización", temp: 150, pressure: 1.0, energy: 85, efficiency: 98, status: "normal" },
+      { name: "Mezclado", temp: 180, pressure: 1.2, energy: 45, efficiency: 99, status: "normal" },
+      { name: "Precalentador", temp: 280, pressure: 1.8, energy: 120, efficiency: 96, status: "normal" },
+      { name: "Reactor Catalítico", temp: 420, pressure: 2.1, energy: 450, efficiency: 95, status: "normal" },
+      { name: "Enfriamiento 1°", temp: 250, pressure: 1.9, energy: 180, efficiency: 97, status: "normal" },
+      { name: "Enfriamiento 2°", temp: 120, pressure: 1.5, energy: 150, efficiency: 98, status: "normal" },
+      { name: "Absorción", temp: 50, pressure: 1.1, energy: 95, efficiency: 94, status: "warning" },
+      { name: "Destilación", temp: 200, pressure: 0.5, energy: 280, efficiency: 92, status: "normal" },
+      { name: "Purificación", temp: 165, pressure: 0.3, energy: 220, efficiency: 90, status: "normal" },
+      { name: "Cristalización", temp: 60, pressure: 1.0, energy: 110, efficiency: 96, status: "normal" },
+      { name: "Secado", temp: 85, pressure: 0.8, energy: 140, efficiency: 97, status: "normal" },
+      { name: "Almacenamiento", temp: 25, pressure: 1.0, energy: 15, efficiency: 100, status: "normal" },
+    ];
+
+    const QUALITY_DATA = [
+      { batch: "MA-2026-001", purity: 99.5, color: "Blanco", moisture: 0.05, yield: 68.2, status: "Aprobado" },
+      { batch: "MA-2026-002", purity: 99.7, color: "Blanco", moisture: 0.03, yield: 69.1, status: "Aprobado" },
+      { batch: "MA-2026-003", purity: 99.3, color: "Amarillo claro", moisture: 0.08, yield: 66.5, status: "Rechazado" },
+      { batch: "MA-2026-004", purity: 99.6, color: "Blanco", moisture: 0.04, yield: 68.8, status: "Aprobado" },
+      { batch: "MA-2026-005", purity: 99.8, color: "Blanco", moisture: 0.02, yield: 70.2, status: "Aprobado" },
+    ];
+
+    const PRODUCT_DISTRIBUTION = [
+      { name: "Anhídrido Maleico", value: CALC.output.maleicAnhydrideMass, color: "#3b82f6" },
+      { name: "Agua (subproducto)", value: CALC.output.waterMass, color: "#06b6d4" },
+      { name: "CO/CO2 (gases)", value: CALC.input.butaneMass * 0.08, color: "#64748b" },
+      { name: "n-Butano sin reaccionar", value: CALC.input.butaneMass * (1 - CALC.yields.conversion / 100), color: "#f59e0b" },
+    ];
+
+    const ECONOMIC_DATA = {
+      butanePrice: 0.85,
+      oxygenPrice: 0.12,
+      maleicAnhydridePrice: 2.45,
+      energyCost: 0.08,
+      catalystCost: 450,
+      laborCost: 850,
+      maintenanceCost: 320,
+    };
+
+    const calculateEconomics = () => {
+      const butaneCost = CALC.input.butaneMass * ECONOMIC_DATA.butanePrice;
+      const oxygenCost = CALC.input.oxygenMass * ECONOMIC_DATA.oxygenPrice;
+      const totalEnergy = PROCESS_STAGES.reduce((sum, s) => sum + s.energy, 0);
+      const energyCost = totalEnergy * ECONOMIC_DATA.energyCost;
+      
+      const totalCost = butaneCost + oxygenCost + energyCost + 
+                        ECONOMIC_DATA.catalystCost + 
+                        ECONOMIC_DATA.laborCost + 
+                        ECONOMIC_DATA.maintenanceCost;
+      
+      const revenue = CALC.output.maleicAnhydrideMass * ECONOMIC_DATA.maleicAnhydridePrice;
+      const profit = revenue - totalCost;
+      const profitMargin = (profit / revenue) * 100;
+      
+      return {
+        costs: {
+          butane: butaneCost,
+          oxygen: oxygenCost,
+          energy: energyCost,
+          catalyst: ECONOMIC_DATA.catalystCost,
+          labor: ECONOMIC_DATA.laborCost,
+          maintenance: ECONOMIC_DATA.maintenanceCost,
+          total: totalCost,
+        },
+        revenue: revenue,
+        profit: profit,
+        profitMargin: profitMargin,
+        costPerKg: totalCost / CALC.output.maleicAnhydrideMass,
+      };
+    };
+
+    const ECONOMICS = calculateEconomics();
+
+    const PRODUCTION_FORECAST = Array.from({ length: 12 }, (_, i) => ({
+      month: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"][i],
+      production: CALC.output.maleicAnhydrideMass * (22 + Math.random() * 4),
+      yield: 68 + (Math.random() - 0.5) * 6,
+      quality: 99.5 + (Math.random() - 0.5) * 0.8,
+    }));
+
+    // ═══════════════════════════════════════════════════════
+    // COMPONENTES UI
+    // ═══════════════════════════════════════════════════════
+
+    const C = {
+      bg: "#0a0e1a",
+      card: "#111827",
+      border: "#1f2937",
+      primary: "#3b82f6",
+      secondary: "#06b6d4",
+      success: "#10b981",
+      warning: "#f59e0b",
+      danger: "#ef4444",
+      text: "#f3f4f6",
+      textMuted: "#9ca3af",
+      accent1: "#8b5cf6",
+      accent2: "#ec4899",
+    };
+
+    const Stat = ({ label, value, unit, trend, icon, color = C.primary }) => (
+      <div className="stat-card" style={{
+        background: `linear-gradient(135deg, ${C.card} 0%, ${color}15 100%)`,
+        border: `1px solid ${color}40`,
+        borderRadius: "12px",
+        padding: "20px",
+        position: "relative",
+        overflow: "hidden",
+        transition: "all 0.3s ease",
+      }}>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ 
+            fontSize: "13px", 
+            color: C.textMuted, 
+            marginBottom: "8px",
+            fontWeight: 500,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            {icon && <span style={{ marginRight: "6px" }}>{icon}</span>}
+            {label}
+          </div>
+          <div style={{ 
+            fontSize: "28px", 
+            fontWeight: 700, 
+            color: color,
+            fontFamily: "monospace"
+          }}>
+            {value}
+            {unit && <span style={{ fontSize: "16px", marginLeft: "6px", color: C.textMuted }}>{unit}</span>}
+          </div>
+          {trend !== undefined && (
+            <div style={{ 
+              marginTop: "8px", 
+              fontSize: "12px",
+              color: trend >= 0 ? C.success : C.danger,
+              fontWeight: 600
+            }}>
+              {trend >= 0 ? "▲" : "▼"} {Math.abs(trend)}%
+            </div>
+          )}
+        </div>
+      </div>
+    );
+
+    const Section = ({ title, children, icon }) => (
+      <div style={{ marginBottom: "32px" }}>
+        <h2 style={{ 
+          fontSize: "20px", 
+          fontWeight: 700, 
+          marginBottom: "16px",
+          color: C.text,
+          borderLeft: `4px solid ${C.primary}`,
+          paddingLeft: "12px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px"
+        }}>
+          {icon && <span>{icon}</span>}
+          {title}
+        </h2>
+        {children}
+      </div>
+    );
+
+    const Badge = ({ children, variant = "default" }) => {
+      const colors = {
+        default: { bg: C.primary, text: "#fff" },
+        success: { bg: C.success, text: "#fff" },
+        warning: { bg: C.warning, text: "#000" },
+        danger: { bg: C.danger, text: "#fff" },
+        info: { bg: C.secondary, text: "#fff" },
+      };
+      const c = colors[variant] || colors.default;
+      return (
+        <span style={{
+          padding: "4px 12px",
+          borderRadius: "6px",
+          fontSize: "11px",
+          fontWeight: 700,
+          backgroundColor: c.bg,
+          color: c.text,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          {children}
+        </span>
+      );
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // DASHBOARD PRINCIPAL
+    // ═══════════════════════════════════════════════════════
+
+    const MaleicAnhydrideDashboard = () => {
+      const [activeView, setActiveView] = useState("production");
+      const [liveData, setLiveData] = useState(REACTOR_HISTORY[REACTOR_HISTORY.length - 1]);
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          const noise = () => (Math.random() - 0.5) * 2;
+          setLiveData({
+            hour: new Date().toLocaleTimeString(),
+            temperature: 420 + noise() * 8,
+            pressure: 2.1 + noise() * 0.15,
+            butaneFlow: 42 + noise() * 3,
+            oxygenFlow: 147 + noise() * 8,
+            yield: 68 + noise() * 4,
+            conversion: 95 + noise() * 2,
+          });
+        }, 2000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const renderNavigation = () => (
+        <div style={{ 
+          display: "flex", 
+          gap: "12px", 
+          marginBottom: "24px",
+          borderBottom: `2px solid ${C.border}`,
+          paddingBottom: "12px"
+        }}>
+          {[
+            { id: "production", label: "🏭 Producción", icon: "⚗️" },
+            { id: "reactor", label: "⚛️ Reactor", icon: "🔥" },
+            { id: "quality", label: "✓ Calidad", icon: "📊" },
+            { id: "economics", label: "💰 Economía", icon: "💵" },
+          ].map(view => (
+            <button
+              key={view.id}
+              onClick={() => setActiveView(view.id)}
+              style={{
+                padding: "12px 24px",
+                background: activeView === view.id 
+                  ? `linear-gradient(135deg, ${C.primary} 0%, ${C.accent1} 100%)`
+                  : C.card,
+                border: `1px solid ${activeView === view.id ? C.primary : C.border}`,
+                borderRadius: "8px",
+                color: C.text,
+                cursor: "pointer",
+                fontWeight: 600,
+                fontSize: "14px",
+                transition: "all 0.3s ease",
+                boxShadow: activeView === view.id ? `0 4px 12px ${C.primary}40` : "none",
+              }}
+            >
+              <span style={{ marginRight: "6px" }}>{view.icon}</span>
+              {view.label}
+            </button>
+          ))}
+        </div>
+      );
+
+      const renderProduction = () => (
+        <div>
+          <Section title="Balance de Materia" icon="⚖️">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+              <Stat 
+                label="n-Butano Alimentado" 
+                value={PRODUCTION_DATA.nButaneVolume} 
+                unit="L"
+                icon="🛢️"
+                color={C.warning}
+              />
+              <Stat 
+                label="Masa de n-Butano" 
+                value={CALC.input.butaneMass.toFixed(1)} 
+                unit="kg"
+                icon="⚖️"
+                color={C.warning}
+              />
+              <Stat 
+                label="Oxígeno Requerido" 
+                value={CALC.input.oxygenMass.toFixed(1)} 
+                unit="kg"
+                icon="💨"
+                color={C.secondary}
+              />
+              <Stat 
+                label="Anhídrido Maleico Obtenido" 
+                value={CALC.output.maleicAnhydrideMass.toFixed(2)} 
+                unit="kg"
+                icon="⭐"
+                color={C.primary}
+                trend={2.3}
+              />
+            </div>
+
+            <div style={{
+              background: `linear-gradient(135deg, ${C.card} 0%, ${C.primary}10 100%)`,
+              border: `1px solid ${C.primary}40`,
+              borderRadius: "12px",
+              padding: "24px",
+              marginTop: "24px"
+            }}>
+              <h3 style={{ color: C.text, marginBottom: "16px", fontSize: "18px", fontWeight: 600 }}>
+                📊 Resumen de Cálculos Estequiométricos
+              </h3>
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "20px" 
+              }}>
+                <div>
+                  <div style={{ fontSize: "12px", color: C.textMuted, marginBottom: "4px" }}>CONVERSIÓN DE n-BUTANO</div>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: C.primary }}>{CALC.yields.conversion}%</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: C.textMuted, marginBottom: "4px" }}>SELECTIVIDAD A MA</div>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: C.secondary }}>{CALC.yields.selectivity}%</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: C.textMuted, marginBottom: "4px" }}>RENDIMIENTO GLOBAL</div>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: C.success }}>{CALC.yields.overall.toFixed(1)}%</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "12px", color: C.textMuted, marginBottom: "4px" }}>PRODUCCIÓN TEÓRICA</div>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: C.warning }}>{CALC.theoretical.maleicAnhydrideMass.toFixed(2)} kg</div>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          <Section title="Reacción Química" icon="⚗️">
+            <div style={{
+              background: `linear-gradient(135deg, ${C.card} 0%, ${C.primary}10 100%)`,
+              border: `1px solid ${C.primary}40`,
+              borderRadius: "12px",
+              padding: "24px",
+              marginBottom: "20px"
+            }}>
+              <div style={{ 
+                textAlign: "center", 
+                fontSize: "24px", 
+                fontFamily: "monospace",
+                color: C.text,
+                fontWeight: 600,
+                letterSpacing: "1px"
+              }}>
+                C₄H₁₀ + 3.5 O₂ → C₄H₂O₃ + 4 H₂O
+              </div>
+              <div style={{ 
+                textAlign: "center", 
+                fontSize: "13px", 
+                color: C.textMuted,
+                marginTop: "12px"
+              }}>
+                <div>n-Butano + Oxígeno → Anhídrido Maleico + Agua</div>
+                <div style={{ marginTop: "8px" }}>
+                  Catalizador: <Badge variant="info">{PRODUCTION_DATA.catalystType}</Badge>
+                  {" | "}
+                  T = <Badge variant="danger">{PRODUCTION_DATA.temperature}°C</Badge>
+                  {" | "}
+                  P = <Badge variant="warning">{PRODUCTION_DATA.pressure} bar</Badge>
+                </div>
+              </div>
+            </div>
+          </Section>
+
+          <div style={{
+            background: C.card,
+            border: `1px solid ${C.success}`,
+            borderRadius: "12px",
+            padding: "24px",
+            marginTop: "24px",
+            textAlign: "center"
+          }}>
+            <h3 style={{ color: C.success, fontSize: "18px", fontWeight: 700, marginBottom: "16px" }}>
+              ✅ RESULTADO FINAL DE PRODUCCIÓN
+            </h3>
+            <div style={{ fontSize: "48px", fontWeight: 800, color: C.success, fontFamily: "monospace" }}>
+              {CALC.output.maleicAnhydrideMass.toFixed(2)} kg
+            </div>
+            <div style={{ fontSize: "16px", color: C.textMuted, marginTop: "8px" }}>
+              de Anhídrido Maleico obtenido a partir de {PRODUCTION_DATA.nButaneVolume} L de n-butano
+            </div>
+            <div style={{ 
+              marginTop: "20px",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "16px",
+              maxWidth: "600px",
+              margin: "20px auto 0"
+            }}>
+              <div style={{ padding: "12px", background: `${C.primary}15`, borderRadius: "8px" }}>
+                <div style={{ fontSize: "12px", color: C.textMuted }}>Moles MA</div>
+                <div style={{ fontSize: "18px", fontWeight: 700, color: C.primary }}>
+                  {CALC.output.maleicAnhydrideMoles.toFixed(2)}
+                </div>
+              </div>
+              <div style={{ padding: "12px", background: `${C.secondary}15`, borderRadius: "8px" }}>
+                <div style={{ fontSize: "12px", color: C.textMuted }}>Agua producida</div>
+                <div style={{ fontSize: "18px", fontWeight: 700, color: C.secondary }}>
+                  {CALC.output.waterMass.toFixed(2)} kg
+                </div>
+              </div>
+              <div style={{ padding: "12px", background: `${C.warning}15`, borderRadius: "8px" }}>
+                <div style={{ fontSize: "12px", color: C.textMuted }}>O₂ usado</div>
+                <div style={{ fontSize: "18px", fontWeight: 700, color: C.warning }}>
+                  {CALC.input.oxygenMass.toFixed(2)} kg
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderReactor = () => (
+        <div>
+          <Section title="Monitoreo en Tiempo Real" icon="📡">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px" }}>
+              <Stat 
+                label="Temperatura" 
+                value={liveData.temperature.toFixed(1)} 
+                unit="°C"
+                icon="🌡️"
+                color={C.danger}
+              />
+              <Stat 
+                label="Presión" 
+                value={liveData.pressure.toFixed(2)} 
+                unit="bar"
+                icon="🔘"
+                color={C.warning}
+              />
+              <Stat 
+                label="Flujo n-Butano" 
+                value={liveData.butaneFlow.toFixed(1)} 
+                unit="kg/h"
+                icon="⛽"
+                color={C.secondary}
+              />
+              <Stat 
+                label="Rendimiento" 
+                value={liveData.yield.toFixed(1)} 
+                unit="%"
+                icon="🎯"
+                color={C.success}
+              />
+            </div>
+          </Section>
+
+          <Section title="Estado de Equipos" icon="⚙️">
+            <div style={{ 
+              display: "grid", 
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "12px" 
+            }}>
+              {PROCESS_STAGES.map((stage, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: C.card,
+                    border: `1px solid ${
+                      stage.status === "normal" ? C.success :
+                      stage.status === "warning" ? C.warning : C.danger
+                    }`,
+                    borderRadius: "8px",
+                    padding: "16px",
+                  }}
+                >
+                  <div style={{ 
+                    display: "flex", 
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "12px"
+                  }}>
+                    <span style={{ color: C.text, fontWeight: 600, fontSize: "14px" }}>
+                      {stage.name}
+                    </span>
+                    <Badge variant={
+                      stage.status === "normal" ? "success" :
+                      stage.status === "warning" ? "warning" : "danger"
+                    }>
+                      {stage.status === "normal" ? "✓ OK" : "⚠ Alert"}
+                    </Badge>
+                  </div>
+                  <div style={{ fontSize: "12px", color: C.textMuted }}>
+                    <div>Temp: <span style={{ color: C.danger }}>{stage.temp}°C</span></div>
+                    <div>Presión: <span style={{ color: C.warning }}>{stage.pressure} bar</span></div>
+                    <div>Eficiencia: <span style={{ color: C.success }}>{stage.efficiency}%</span></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+        </div>
+      );
+
+      const renderQuality = () => (
+        <div>
+          <Section title="Control de Calidad - Lotes Recientes" icon="🔬">
+            <div style={{
+              background: C.card,
+              border: `1px solid ${C.border}`,
+              borderRadius: "12px",
+              overflow: "hidden"
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: C.primary, color: "#fff" }}>
+                    <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", fontWeight: 600 }}>Lote</th>
+                    <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: 600 }}>Pureza (%)</th>
+                    <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: 600 }}>Color</th>
+                    <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: 600 }}>Rendimiento (%)</th>
+                    <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: 600 }}>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {QUALITY_DATA.map((row, idx) => (
+                    <tr 
+                      key={idx}
+                      style={{ 
+                        borderBottom: `1px solid ${C.border}`,
+                        background: idx % 2 === 0 ? C.card : `${C.primary}05`
+                      }}
+                    >
+                      <td style={{ padding: "12px", color: C.text, fontFamily: "monospace", fontSize: "12px" }}>
+                        {row.batch}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "center", color: C.primary, fontWeight: 700 }}>
+                        {row.purity}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "center", color: C.textMuted }}>
+                        {row.color}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "center", color: C.success, fontWeight: 600 }}>
+                        {row.yield}
+                      </td>
+                      <td style={{ padding: "12px", textAlign: "center" }}>
+                        <Badge variant={row.status === "Aprobado" ? "success" : "danger"}>
+                          {row.status}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Section>
+        </div>
+      );
+
+      const renderEconomics = () => (
+        <div>
+          <Section title="Análisis Económico del Batch" icon="💰">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+              <Stat 
+                label="Ingresos Totales" 
+                value={ECONOMICS.revenue.toFixed(2)} 
+                unit="USD"
+                icon="💵"
+                color={C.success}
+              />
+              <Stat 
+                label="Costos Totales" 
+                value={ECONOMICS.costs.total.toFixed(2)} 
+                unit="USD"
+                icon="💸"
+                color={C.danger}
+              />
+              <Stat 
+                label="Beneficio Neto" 
+                value={ECONOMICS.profit.toFixed(2)} 
+                unit="USD"
+                icon="💰"
+                color={C.primary}
+                trend={5.2}
+              />
+              <Stat 
+                label="Margen de Beneficio" 
+                value={ECONOMICS.profitMargin.toFixed(1)} 
+                unit="%"
+                icon="📈"
+                color={C.accent1}
+              />
+            </div>
+          </Section>
+        </div>
+      );
+
+      return (
+        <div style={{ 
+          background: C.bg,
+          minHeight: "100vh",
+          padding: "24px",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          color: C.text
+        }}>
+          <div style={{ maxWidth: "1600px", margin: "0 auto" }}>
+            <div style={{ 
+              marginBottom: "32px",
+              borderBottom: `3px solid ${C.primary}`,
+              paddingBottom: "20px"
+            }}>
+              <h1 style={{ 
+                fontSize: "36px", 
+                fontWeight: 800,
+                background: `linear-gradient(135deg, ${C.primary} 0%, ${C.secondary} 100%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                marginBottom: "8px"
+              }}>
+                ⚗️ PRODUCCIÓN DE ANHÍDRIDO MALEICO
+              </h1>
+              <p style={{ color: C.textMuted, fontSize: "14px" }}>
+                Sistema de Monitoreo y Control Industrial | Oxidación Catalítica de n-Butano
+              </p>
+            </div>
+
+            {renderNavigation()}
+
+            {activeView === "production" && renderProduction()}
+            {activeView === "reactor" && renderReactor()}
+            {activeView === "quality" && renderQuality()}
+            {activeView === "economics" && renderEconomics()}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<MaleicAnhydrideDashboard />, document.getElementById('root'));
+  </script>
+</body>
+</html>

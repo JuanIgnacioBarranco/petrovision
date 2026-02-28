@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Anhídrido Maleico</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0e1a;
+      color: #f3f4f6;
+      padding: 24px;
+    }
+
+    .container { max-width: 1600px; margin: 0 auto; }
+    
+    .header {
+      margin-bottom: 32px;
+      border-bottom: 3px solid #3b82f6;
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle { color: #9ca3af; font-size: 14px; }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #1f2937;
+      padding-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 12px 24px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      color: #f3f4f6;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover { border-color: #3b82f6; }
+
+    .nav-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-color: #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      border-left: 4px solid #3b82f6;
+      padding-left: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #111827 0%, rgba(59, 130, 246, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .stat-unit {
+      font-size: 16px;
+      margin-left: 6px;
+      color: #9ca3af;
+    }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+    }
+
+    .badge-success { background: #10b981; color: #fff; }
+    .badge-warning { background: #f59e0b; color: #000; }
+    .badge-danger { background: #ef4444; color: #fff; }
+    .badge-info { background: #06b6d4; color: #fff; }
+
+    .equation {
+      text-align: center;
+      font-size: 24px;
+      font-family: monospace;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin: 20px 0;
+    }
+
+    .result-box {
+      background: #111827;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .result-title {
+      color: #10b981;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .result-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: #10b981;
+      font-family: monospace;
+    }
+
+    .result-desc {
+      font-size: 16px;
+      color: #9ca3af;
+      margin-top: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-box {
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: #3b82f6;
+      color: #fff;
+    }
+
+    .table th {
+      padding: 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .table td {
+      padding: 12px;
+      border-bottom: 1px solid #1f2937;
+      font-size: 13px;
+    }
+
+    .table tbody tr {
+      background: #111827;
+    }
+
+    .table tbody tr:nth-child(even) {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .process-stage {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .process-stage.warning { border-color: #f59e0b; }
+    .process-stage.normal { border-color: #10b981; }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stage-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .stage-details {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .color-primary { color: #3b82f6; }
+    .color-secondary { color: #06b6d4; }
+    .color-success { color: #10b981; }
+    .color-warning { color: #f59e0b; }
+    .color-danger { color: #ef4444; }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #1f2937;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+      transition: width 0.5s ease;
+    }
+
+    .cost-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+
+    /* Estilos para el diagrama del reactor */
+    .reactor-diagram {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .reactor-svg {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .stream-line {
+      stroke-width: 3;
+      fill: none;
+      stroke-dasharray: 10 5;
+      animation: flow 2s linear infinite;
+    }
+
+    @keyframes flow {
+      to { stroke-dashoffset: -15; }
+    }
+
+    .stream-arrow {
+      fill: currentColor;
+    }
+
+    .reactor-body {
+      transition: all 0.3s ease;
+    }
+
+    .reactor-body:hover {
+      filter: brightness(1.2);
+    }
+
+    .control-panel {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .gauge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+    }
+
+    .gauge svg {
+      transform: rotate(-90deg);
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: #1f2937;
+      stroke-width: 10;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .gauge-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .gauge-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .gauge-label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+    }
+
+    .stream-label {
+      font-size: 12px;
+      font-weight: 600;
+      fill: #f3f4f6;
+    }
+
+    .flow-particle {
+      animation: particle-flow 3s linear infinite;
+    }
+
+    @keyframes particle-flow {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .alarm-indicator {
+      animation: pulse-alarm 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-alarm {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚗️ PRODUCCIÓN DE ANHÍDRIDO MALEICO</h1>
+      <p class="subtitle">Sistema de Monitoreo y Control Industrial | Oxidación Catalítica de n-Butano | Producción Semanal</p>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn active" onclick="showView('production')">🏭 Producción</button>
+      <button class="nav-btn" onclick="showView('diagram')">🔄 Diagrama Reactor</button>
+      <button class="nav-btn" onclick="showView('reactor')">⚛️ Monitoreo</button>
+      <button class="nav-btn" onclick="showView('quality')">✓ Calidad</button>
+      <button class="nav-btn" onclick="showView('economics')">💰 Economía</button>
+    </div>
+
+    <div id="production" class="view active"></div>
+    <div id="diagram" class="view"></div>
+    <div id="reactor" class="view"></div>
+    <div id="quality" class="view"></div>
+    <div id="economics" class="view"></div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // CONSTANTES Y DATOS
+    // ═══════════════════════════════════════════════════════
+
+    const MOLECULAR_WEIGHTS = {
+      nButane: 58.12,
+      oxygen: 32.00,
+      maleicAnhydride: 98.06,
+      water: 18.02,
+    };
+
+    const STOICH_RATIOS = {
+      oxygenToButane: 3.5,
+      maleicToButane: 1.0,
+      waterToButane: 4.0,
+    };
+
+    const PRODUCTION_DATA = {
+      nButaneVolume: 100000,        // Litros totales procesados en 1 semana
+      nButaneDensity: 0.573,         // kg/L a 25°C
+      reactionYield: 68,             // % rendimiento selectivo
+      temperature: 420,              // °C temperatura del reactor
+      pressure: 2.1,                 // bar presión del reactor
+      oxygenExcess: 15,              // % exceso de oxígeno
+      catalystType: "V2O5-MoO3",    // Catalizador de vanadio-molibdeno
+      conversionRate: 95,            // % conversión de n-butano
+      productionPeriod: 7,           // días de producción continua
+      operatingHours: 168,           // horas de operación (7 días × 24 h)
+    };
+
+    const PROCESS_STAGES = [
+      { name: "Vaporización", temp: 150, pressure: 1.0, energy: 85, efficiency: 98, status: "normal" },
+      { name: "Mezclado", temp: 180, pressure: 1.2, energy: 45, efficiency: 99, status: "normal" },
+      { name: "Precalentador", temp: 280, pressure: 1.8, energy: 120, efficiency: 96, status: "normal" },
+      { name: "Reactor Catalítico", temp: 420, pressure: 2.1, energy: 450, efficiency: 95, status: "normal" },
+      { name: "Enfriamiento 1°", temp: 250, pressure: 1.9, energy: 180, efficiency: 97, status: "normal" },
+      { name: "Enfriamiento 2°", temp: 120, pressure: 1.5, energy: 150, efficiency: 98, status: "normal" },
+      { name: "Absorción", temp: 50, pressure: 1.1, energy: 95, efficiency: 94, status: "warning" },
+      { name: "Destilación", temp: 200, pressure: 0.5, energy: 280, efficiency: 92, status: "normal" },
+      { name: "Purificación", temp: 165, pressure: 0.3, energy: 220, efficiency: 90, status: "normal" },
+      { name: "Cristalización", temp: 60, pressure: 1.0, energy: 110, efficiency: 96, status: "normal" },
+      { name: "Secado", temp: 85, pressure: 0.8, energy: 140, efficiency: 97, status: "normal" },
+      { name: "Almacenamiento", temp: 25, pressure: 1.0, energy: 15, efficiency: 100, status: "normal" },
+    ];
+
+    const QUALITY_DATA = [
+      { batch: "MA-2026-001", purity: 99.5, color: "Blanco", yield: 68.2, status: "Aprobado" },
+      { batch: "MA-2026-002", purity: 99.7, color: "Blanco", yield: 69.1, status: "Aprobado" },
+      { batch: "MA-2026-003", purity: 99.3, color: "Amarillo", yield: 66.5, status: "Rechazado" },
+      { batch: "MA-2026-004", purity: 99.6, color: "Blanco", yield: 68.8, status: "Aprobado" },
+      { batch: "MA-2026-005", purity: 99.8, color: "Blanco", yield: 70.2, status: "Aprobado" },
+    ];
+
+    const ECONOMIC_DATA = {
+      butanePrice: 0.85,              // USD/kg
+      oxygenPrice: 0.12,              // USD/kg
+      maleicAnhydridePrice: 2.45,     // USD/kg
+      energyCost: 0.08,               // USD/kWh
+      catalystCost: 450 * 7,          // USD/semana (reposición semanal)
+      laborCost: 850 * 7,             // USD/semana (7 días × 3 turnos)
+      maintenanceCost: 320 * 7,       // USD/semana (mantenimiento continuo)
+    };
+
+    // ═══════════════════════════════════════════════════════
+    // CÁLCULOS
+    // ═══════════════════════════════════════════════════════
+
+    function calculateProduction() {
+      const massButane = PRODUCTION_DATA.nButaneVolume * PRODUCTION_DATA.nButaneDensity;
+      const massButaneGrams = massButane * 1000;
+      const molesButane = massButaneGrams / MOLECULAR_WEIGHTS.nButane;
+      const molesMATheoretical = molesButane * STOICH_RATIOS.maleicToButane;
+      const massMATheoretical = molesMATheoretical * MOLECULAR_WEIGHTS.maleicAnhydride;
+      const massMAReal = massMATheoretical * 
+                         (PRODUCTION_DATA.conversionRate / 100) * 
+                         (PRODUCTION_DATA.reactionYield / 100);
+      const molesO2Theoretical = molesButane * STOICH_RATIOS.oxygenToButane;
+      const molesO2Real = molesO2Theoretical * (1 + PRODUCTION_DATA.oxygenExcess / 100);
+      const massO2Real = molesO2Real * MOLECULAR_WEIGHTS.oxygen;
+      const molesWater = molesButane * STOICH_RATIOS.waterToButane * (PRODUCTION_DATA.conversionRate / 100);
+      const massWater = molesWater * MOLECULAR_WEIGHTS.water;
+      
+      return {
+        input: {
+          butaneMass: massButane,
+          butaneMoles: molesButane,
+          oxygenMass: massO2Real / 1000,
+          oxygenMoles: molesO2Real,
+        },
+        output: {
+          maleicAnhydrideMass: massMAReal / 1000,
+          maleicAnhydrideMoles: (massMAReal / MOLECULAR_WEIGHTS.maleicAnhydride),
+          waterMass: massWater / 1000,
+          waterMoles: molesWater,
+        },
+        theoretical: {
+          maleicAnhydrideMass: massMATheoretical / 1000,
+        },
+        yields: {
+          conversion: PRODUCTION_DATA.conversionRate,
+          selectivity: PRODUCTION_DATA.reactionYield,
+          overall: (PRODUCTION_DATA.conversionRate * PRODUCTION_DATA.reactionYield) / 100,
+        }
+      };
+    }
+
+    function calculateEconomics(calc) {
+      const butaneCost = calc.input.butaneMass * ECONOMIC_DATA.butanePrice;
+      const oxygenCost = calc.input.oxygenMass * ECONOMIC_DATA.oxygenPrice;
+      const totalEnergy = PROCESS_STAGES.reduce((sum, s) => sum + s.energy, 0);
+      const energyCost = totalEnergy * ECONOMIC_DATA.energyCost;
+      
+      const totalCost = butaneCost + oxygenCost + energyCost + 
+                        ECONOMIC_DATA.catalystCost + 
+                        ECONOMIC_DATA.laborCost + 
+                        ECONOMIC_DATA.maintenanceCost;
+      
+      const revenue = calc.output.maleicAnhydrideMass * ECONOMIC_DATA.maleicAnhydridePrice;
+      const profit = revenue - totalCost;
+      const profitMargin = (profit / revenue) * 100;
+      
+      return {
+        costs: {
+          butane: butaneCost,
+          oxygen: oxygenCost,
+          energy: energyCost,
+          catalyst: ECONOMIC_DATA.catalystCost,
+          labor: ECONOMIC_DATA.laborCost,
+          maintenance: ECONOMIC_DATA.maintenanceCost,
+          total: totalCost,
+        },
+        revenue: revenue,
+        profit: profit,
+        profitMargin: profitMargin,
+        costPerKg: totalCost / calc.output.maleicAnhydrideMass,
+      };
+    }
+
+    const CALC = calculateProduction();
+    const ECONOMICS = calculateEconomics(CALC);
+
+    // ═══════════════════════════════════════════════════════
+    // FUNCIONES DE RENDER
+    // ═══════════════════════════════════════════════════════
+
+    function showView(viewId) {
+      // Actualizar botones
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Actualizar vistas
+      document.querySelectorAll('.view').forEach(view => {
+        view.classList.remove('active');
+      });
+      document.getElementById(viewId).classList.add('active');
+    }
+
+    function renderProduction() {
+      return `
+        <div class="section">
+          <h2 class="section-title">⚖️ Balance de Materia</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">🛢️ n-Butano Alimentado</div>
+              <div class="stat-value color-warning">${PRODUCTION_DATA.nButaneVolume.toLocaleString('es-ES')}<span class="stat-unit">L</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">⚖️ Masa de n-Butano</div>
+              <div class="stat-value color-warning">${CALC.input.butaneMass.toLocaleString('es-ES', {maximumFractionDigits: 1})}<span class="stat-unit">kg</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">💨 Oxígeno Requerido</div>
+              <div class="stat-value color-secondary">${CALC.input.oxygenMass.toLocaleString('es-ES', {maximumFractionDigits: 1})}<span class="stat-unit">kg</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">⭐ Anhídrido Maleico Obtenido</div>
+              <div class="stat-value color-primary">${CALC.output.maleicAnhydrideMass.toLocaleString('es-ES', {maximumFractionDigits: 2})}<span class="stat-unit">kg</span></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 16px; border: 1px solid #06b6d4;">
+            <h3 style="color: #06b6d4; margin-bottom: 16px;">⏱️ Tasas de Producción</h3>
+            <div class="stats-grid">
+              <div class="stat-card" style="border-color: #06b6d4;">
+                <div class="stat-label">Producción por Hora</div>
+                <div class="stat-value color-secondary">${(CALC.output.maleicAnhydrideMass / PRODUCTION_DATA.operatingHours).toFixed(3)}<span class="stat-unit">kg/h</span></div>
+              </div>
+              <div class="stat-card" style="border-color: #06b6d4;">
+                <div class="stat-label">Producción por Día</div>
+                <div class="stat-value color-secondary">${(CALC.output.maleicAnhydrideMass / PRODUCTION_DATA.productionPeriod).toFixed(2)}<span class="stat-unit">kg/día</span></div>
+              </div>
+              <div class="stat-card" style="border-color: #06b6d4;">
+                <div class="stat-label">Flujo de n-Butano</div>
+                <div class="stat-value color-secondary">${(PRODUCTION_DATA.nButaneVolume / PRODUCTION_DATA.operatingHours).toFixed(2)}<span class="stat-unit">L/h</span></div>
+              </div>
+              <div class="stat-card" style="border-color: #06b6d4;">
+                <div class="stat-label">Período de Operación</div>
+                <div class="stat-value color-secondary">${PRODUCTION_DATA.productionPeriod}<span class="stat-unit">días</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="equation">C₄H₁₀ + 3.5 O₂ → C₄H₂O₃ + 4 H₂O</div>
+            <div class="equation-info">
+              <div>n-Butano + Oxígeno → Anhídrido Maleico + Agua</div>
+              <div style="margin-top: 8px;">
+                Catalizador: <span class="badge badge-info">${PRODUCTION_DATA.catalystType}</span>
+                T = <span class="badge badge-danger">${PRODUCTION_DATA.temperature}°C</span>
+                P = <span class="badge badge-warning">${PRODUCTION_DATA.pressure} bar</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="color: #f3f4f6; margin-bottom: 16px;">📊 Rendimientos del Proceso</h3>
+            <div class="grid-3">
+              <div class="metric-box" style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6;">
+                <div class="metric-label">CONVERSIÓN DE n-BUTANO</div>
+                <div class="metric-value color-primary">${CALC.yields.conversion}%</div>
+              </div>
+              <div class="metric-box" style="background: rgba(6, 182, 212, 0.1); border-left: 4px solid #06b6d4;">
+                <div class="metric-label">SELECTIVIDAD A MA</div>
+                <div class="metric-value color-secondary">${CALC.yields.selectivity}%</div>
+              </div>
+              <div class="metric-box" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;">
+                <div class="metric-label">RENDIMIENTO GLOBAL</div>
+                <div class="metric-value color-success">${CALC.yields.overall.toFixed(1)}%</div>
+              </div>
+            </div>
+            <div style="margin-top: 20px; padding: 16px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+              <div class="metric-label">PRODUCCIÓN TEÓRICA MÁXIMA</div>
+              <div style="font-size: 20px; font-weight: 700;" class="color-primary">${CALC.theoretical.maleicAnhydrideMass.toFixed(2)} kg</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Rendimiento real: ${CALC.yields.overall.toFixed(1)}% del teórico</div>
+            </div>
+          </div>
+
+          <div class="result-box">
+            <div class="result-title">✅ RESULTADO FINAL DE PRODUCCIÓN SEMANAL</div>
+            <div class="result-value">${CALC.output.maleicAnhydrideMass.toLocaleString('es-ES', {maximumFractionDigits: 2})} kg</div>
+            <div class="result-desc">de Anhídrido Maleico obtenido a partir de ${PRODUCTION_DATA.nButaneVolume.toLocaleString('es-ES')} L de n-butano en ${PRODUCTION_DATA.productionPeriod} días</div>
+            <div style="margin-top: 12px; font-size: 14px; color: #06b6d4; font-weight: 600;">
+              Producción diaria promedio: ${(CALC.output.maleicAnhydrideMass / PRODUCTION_DATA.productionPeriod).toLocaleString('es-ES', {maximumFractionDigits: 2})} kg/día
+            </div>
+            <div class="grid-3" style="max-width: 600px; margin: 20px auto 0;">
+              <div style="padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af;">Moles MA</div>
+                <div style="font-size: 18px; font-weight: 700;" class="color-primary">${CALC.output.maleicAnhydrideMoles.toLocaleString('es-ES', {maximumFractionDigits: 2})}</div>
+              </div>
+              <div style="padding: 12px; background: rgba(6, 182, 212, 0.1); border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af;">Agua producida</div>
+                <div style="font-size: 18px; font-weight: 700;" class="color-secondary">${CALC.output.waterMass.toLocaleString('es-ES', {maximumFractionDigits: 2})} kg</div>
+              </div>
+              <div style="padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af;">O₂ usado</div>
+                <div style="font-size: 18px; font-weight: 700;" class="color-warning">${CALC.input.oxygenMass.toLocaleString('es-ES', {maximumFractionDigits: 2})} kg</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px; border: 1px solid #3b82f6;">
+            <h3 style="color: #3b82f6; margin-bottom: 16px;">📅 Desglose de Producción por Día</h3>
+            <div class="grid-3">
+              ${Array.from({length: 7}, (_, i) => `
+                <div style="padding: 16px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; text-align: center;">
+                  <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">DÍA ${i+1}</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #3b82f6;">
+                    ${(CALC.output.maleicAnhydrideMass / 7).toLocaleString('es-ES', {maximumFractionDigits: 2})}
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">kg MA</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderReactor() {
+      let html = `
+        <div class="section">
+          <h2 class="section-title">📡 Monitoreo en Tiempo Real</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">🌡️ Temperatura</div>
+              <div class="stat-value color-danger" id="temp-live">420.0<span class="stat-unit">°C</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">🔘 Presión</div>
+              <div class="stat-value color-warning" id="pressure-live">2.10<span class="stat-unit">bar</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">⛽ Flujo n-Butano</div>
+              <div class="stat-value color-secondary" id="butane-live">42.0<span class="stat-unit">kg/h</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">🎯 Rendimiento</div>
+              <div class="stat-value color-success" id="yield-live">68.0<span class="stat-unit">%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">⚙️ Estado de Equipos</h2>
+          <div class="grid-2">
+      `;
+
+      PROCESS_STAGES.forEach(stage => {
+        const badgeClass = stage.status === 'normal' ? 'badge-success' : 'badge-warning';
+        const badgeText = stage.status === 'normal' ? '✓ OK' : '⚠ Alert';
+        
+        html += `
+          <div class="process-stage ${stage.status}">
+            <div class="stage-header">
+              <span class="stage-name">${stage.name}</span>
+              <span class="badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="stage-details">
+              <div>Temp: <span class="color-danger">${stage.temp}°C</span></div>
+              <div>Presión: <span class="color-warning">${stage.pressure} bar</span></div>
+              <div>Eficiencia: <span class="color-success">${stage.efficiency}%</span></div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      return html;
+    }
+
+    function renderQuality() {
+      let html = `
+        <div class="section">
+          <h2 class="section-title">🔬 Control de Calidad - Lotes Recientes</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Lote</th>
+                <th style="text-align: center;">Pureza (%)</th>
+                <th style="text-align: center;">Color</th>
+                <th style="text-align: center;">Rendimiento (%)</th>
+                <th style="text-align: center;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      QUALITY_DATA.forEach(row => {
+        const badgeClass = row.status === 'Aprobado' ? 'badge-success' : 'badge-danger';
+        html += `
+          <tr>
+            <td style="font-family: monospace;">${row.batch}</td>
+            <td style="text-align: center;" class="color-primary"><strong>${row.purity}</strong></td>
+            <td style="text-align: center; color: #9ca3af;">${row.color}</td>
+            <td style="text-align: center;" class="color-success"><strong>${row.yield}</strong></td>
+            <td style="text-align: center;"><span class="badge ${badgeClass}">${row.status}</span></td>
+          </tr>
+        `;
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">📋 Especificaciones del Producto</h2>
+          <div class="stats-grid">
+            <div class="stat-card" style="border-color: #10b981;">
+              <div class="stat-label">Pureza Mínima</div>
+              <div class="stat-value color-success">99.5<span class="stat-unit">%</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Especificación: ≥ 99.5%</div>
+            </div>
+            <div class="stat-card" style="border-color: #10b981;">
+              <div class="stat-label">Humedad Máxima</div>
+              <div class="stat-value color-success">0.08<span class="stat-unit">%</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Especificación: ≤ 0.1%</div>
+            </div>
+            <div class="stat-card" style="border-color: #10b981;">
+              <div class="stat-label">Color</div>
+              <div class="stat-value color-success" style="font-size: 20px;">Blanco</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Especificación: Blanco cristalino</div>
+            </div>
+            <div class="stat-card" style="border-color: #10b981;">
+              <div class="stat-label">Punto de Fusión</div>
+              <div class="stat-value color-success">52.8<span class="stat-unit">°C</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Especificación: 52-53°C</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return html;
+    }
+
+    function renderDiagram() {
+      const tempNow = 420 + (Math.random() - 0.5) * 8;
+      const pressureNow = 2.1 + (Math.random() - 0.5) * 0.15;
+      const flowButane = (PRODUCTION_DATA.nButaneVolume / PRODUCTION_DATA.operatingHours).toFixed(1);
+      const flowOxygen = (CALC.input.oxygenMass * 1000 / PRODUCTION_DATA.operatingHours).toFixed(1);
+      const flowMA = (CALC.output.maleicAnhydrideMass * 1000 / PRODUCTION_DATA.operatingHours).toFixed(1);
+      const flowWater = (CALC.output.waterMass * 1000 / PRODUCTION_DATA.operatingHours).toFixed(1);
+
+      return `
+        <div class="section">
+          <h2 class="section-title">🔄 Diagrama del Reactor en Tiempo Real</h2>
+          
+          <div class="control-panel">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+              <div>
+                <div class="gauge">
+                  <svg viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle id="temp-gauge" class="gauge-fill" cx="60" cy="60" r="54" 
+                      stroke="#ef4444" 
+                      stroke-dasharray="${2 * Math.PI * 54}" 
+                      stroke-dashoffset="${2 * Math.PI * 54 * (1 - tempNow / 500)}">
+                    </circle>
+                  </svg>
+                  <div class="gauge-text">
+                    <div class="gauge-value color-danger" id="temp-gauge-value">${tempNow.toFixed(1)}</div>
+                    <div class="gauge-label">°C</div>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 8px; font-size: 13px; font-weight: 600;">Temperatura</div>
+              </div>
+              
+              <div>
+                <div class="gauge">
+                  <svg viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle id="pressure-gauge" class="gauge-fill" cx="60" cy="60" r="54" 
+                      stroke="#f59e0b" 
+                      stroke-dasharray="${2 * Math.PI * 54}" 
+                      stroke-dashoffset="${2 * Math.PI * 54 * (1 - pressureNow / 5)}">
+                    </circle>
+                  </svg>
+                  <div class="gauge-text">
+                    <div class="gauge-value color-warning" id="pressure-gauge-value">${pressureNow.toFixed(2)}</div>
+                    <div class="gauge-label">bar</div>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 8px; font-size: 13px; font-weight: 600;">Presión</div>
+              </div>
+
+              <div>
+                <div class="gauge">
+                  <svg viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle class="gauge-fill" cx="60" cy="60" r="54" 
+                      stroke="#10b981" 
+                      stroke-dasharray="${2 * Math.PI * 54}" 
+                      stroke-dashoffset="${2 * Math.PI * 54 * (1 - CALC.yields.conversion / 100)}">
+                    </circle>
+                  </svg>
+                  <div class="gauge-text">
+                    <div class="gauge-value color-success">${CALC.yields.conversion}</div>
+                    <div class="gauge-label">%</div>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 8px; font-size: 13px; font-weight: 600;">Conversión</div>
+              </div>
+
+              <div>
+                <div class="gauge">
+                  <svg viewBox="0 0 120 120">
+                    <circle class="gauge-bg" cx="60" cy="60" r="54"></circle>
+                    <circle class="gauge-fill" cx="60" cy="60" r="54" 
+                      stroke="#3b82f6" 
+                      stroke-dasharray="${2 * Math.PI * 54}" 
+                      stroke-dashoffset="${2 * Math.PI * 54 * (1 - CALC.yields.selectivity / 100)}">
+                    </circle>
+                  </svg>
+                  <div class="gauge-text">
+                    <div class="gauge-value color-primary">${CALC.yields.selectivity}</div>
+                    <div class="gauge-label">%</div>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 8px; font-size: 13px; font-weight: 600;">Selectividad</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reactor-diagram">
+            <svg class="reactor-svg" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+              <!-- Definiciones de gradientes y patrones -->
+              <defs>
+                <linearGradient id="reactor-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ef4444;stop-opacity:0.3" />
+                  <stop offset="100%" style="stop-color:#dc2626;stop-opacity:0.6" />
+                </linearGradient>
+                
+                <linearGradient id="catalyst-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:0.5" />
+                  <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0.8" />
+                </linearGradient>
+
+                <marker id="arrow-butane" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#f59e0b" />
+                </marker>
+                
+                <marker id="arrow-oxygen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#06b6d4" />
+                </marker>
+                
+                <marker id="arrow-product" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#3b82f6" />
+                </marker>
+                
+                <marker id="arrow-water" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#06b6d4" />
+                </marker>
+              </defs>
+
+              <!-- CORRIENTES DE ENTRADA -->
+              
+              <!-- Corriente de n-Butano -->
+              <g>
+                <line class="stream-line" x1="50" y1="200" x2="300" y2="200" stroke="#f59e0b" marker-end="url(#arrow-butane)"/>
+                <circle class="flow-particle" cx="50" cy="200" r="4" fill="#f59e0b">
+                  <animate attributeName="cx" from="50" to="300" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <text x="175" y="185" class="stream-label" fill="#f59e0b">n-Butano (C₄H₁₀)</text>
+                <text x="175" y="230" style="font-size: 11px; fill: #9ca3af;">${flowButane} L/h</text>
+              </g>
+
+              <!-- Corriente de Oxígeno -->
+              <g>
+                <line class="stream-line" x1="50" y1="400" x2="300" y2="400" stroke="#06b6d4" marker-end="url(#arrow-oxygen)"/>
+                <circle class="flow-particle" cx="50" cy="400" r="4" fill="#06b6d4">
+                  <animate attributeName="cx" from="50" to="300" dur="2.5s" repeatCount="indefinite"/>
+                </circle>
+                <text x="175" y="385" class="stream-label" fill="#06b6d4">Oxígeno (O₂)</text>
+                <text x="175" y="430" style="font-size: 11px; fill: #9ca3af;">${flowOxygen} g/h</text>
+              </g>
+
+              <!-- REACTOR CATALÍTICO -->
+              <g class="reactor-body">
+                <!-- Cuerpo principal del reactor -->
+                <rect x="300" y="150" width="200" height="300" rx="20" 
+                  fill="url(#reactor-gradient)" 
+                  stroke="#ef4444" 
+                  stroke-width="3"/>
+                
+                <!-- Capa catalítica -->
+                <rect x="320" y="250" width="160" height="80" rx="5" 
+                  fill="url(#catalyst-gradient)" 
+                  stroke="#8b5cf6" 
+                  stroke-width="2"/>
+                
+                <!-- Etiqueta del catalizador -->
+                <text x="400" y="295" text-anchor="middle" style="font-size: 12px; font-weight: 600; fill: #e9d5ff;">
+                  Catalizador
+                </text>
+                <text x="400" y="310" text-anchor="middle" style="font-size: 10px; fill: #c4b5fd;">
+                  ${PRODUCTION_DATA.catalystType}
+                </text>
+
+                <!-- Indicadores de temperatura -->
+                <circle cx="480" cy="200" r="6" fill="#ef4444" class="alarm-indicator" opacity="0.8"/>
+                <text x="490" y="205" style="font-size: 11px; font-weight: 600; fill: #ef4444;" id="reactor-temp-label">
+                  ${tempNow.toFixed(0)}°C
+                </text>
+
+                <!-- Indicador de presión -->
+                <circle cx="480" cy="230" r="6" fill="#f59e0b" opacity="0.8"/>
+                <text x="490" y="235" style="font-size: 11px; font-weight: 600; fill="#f59e0b;" id="reactor-pressure-label">
+                  ${pressureNow.toFixed(2)} bar
+                </text>
+
+                <!-- Partículas en reacción -->
+                <circle cx="350" cy="290" r="3" fill="#fbbf24" opacity="0.8">
+                  <animate attributeName="cy" values="290;270;290" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="400" cy="290" r="3" fill="#60a5fa" opacity="0.8">
+                  <animate attributeName="cy" values="290;275;290" dur="1.8s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.8s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="450" cy="290" r="3" fill="#34d399" opacity="0.8">
+                  <animate attributeName="cy" values="290;265;290" dur="2.2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.2s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- Título del reactor -->
+                <text x="400" y="180" text-anchor="middle" style="font-size: 14px; font-weight: 700; fill: #fca5a5;">
+                  REACTOR CATALÍTICO
+                </text>
+              </g>
+
+              <!-- CORRIENTES DE SALIDA -->
+              
+              <!-- Corriente de Anhídrido Maleico -->
+              <g>
+                <line class="stream-line" x1="500" y1="250" x2="750" y2="250" stroke="#3b82f6" marker-end="url(#arrow-product)"/>
+                <circle class="flow-particle" cx="500" cy="250" r="4" fill="#3b82f6">
+                  <animate attributeName="cx" from="500" to="750" dur="3.5s" repeatCount="indefinite"/>
+                </circle>
+                <text x="625" y="235" class="stream-label" fill="#3b82f6">Anhídrido Maleico</text>
+                <text x="625" y="280" style="font-size: 11px; fill: #9ca3af;">${flowMA} g/h</text>
+              </g>
+
+              <!-- Corriente de Agua -->
+              <g>
+                <line class="stream-line" x1="500" y1="350" x2="750" y2="350" stroke="#06b6d4" marker-end="url(#arrow-water)"/>
+                <circle class="flow-particle" cx="500" cy="350" r="4" fill="#06b6d4">
+                  <animate attributeName="cx" from="500" to="750" dur="3s" repeatCount="indefinite"/>
+                </circle>
+                <text x="625" y="335" class="stream-label" fill="#06b6d4">Agua (H₂O)</text>
+                <text x="625" y="380" style="font-size: 11px; fill: #9ca3af;">${flowWater} g/h</text>
+              </g>
+
+              <!-- Corriente de gases (CO/CO₂) -->
+              <g>
+                <line class="stream-line" x1="400" y1="150" x2="400" y2="50" stroke="#64748b" marker-end="url(#arrow-product)"/>
+                <circle class="flow-particle" cy="150" cx="400" r="3" fill="#64748b">
+                  <animate attributeName="cy" from="150" to="50" dur="4s" repeatCount="indefinite"/>
+                </circle>
+                <text x="420" y="100" class="stream-label" fill="#94a3b8">Gases (CO/CO₂)</text>
+              </g>
+
+              <!-- Instrumentación -->
+              <g>
+                <!-- Válvula de control butano -->
+                <rect x="240" y="190" width="20" height="20" fill="#374151" stroke="#6b7280" stroke-width="2" rx="2"/>
+                <text x="250" y="220" style="font-size: 9px; fill: #9ca3af;" text-anchor="middle">V-101</text>
+
+                <!-- Válvula de control oxígeno -->
+                <rect x="240" y="390" width="20" height="20" fill="#374151" stroke="#6b7280" stroke-width="2" rx="2"/>
+                <text x="250" y="420" style="font-size: 9px; fill: #9ca3af;" text-anchor="middle">V-102</text>
+
+                <!-- Válvula de salida MA -->
+                <rect x="740" y="240" width="20" height="20" fill="#374151" stroke="#6b7280" stroke-width="2" rx="2"/>
+                <text x="750" y="230" style="font-size: 9px; fill: #9ca3af;" text-anchor="middle">V-201</text>
+              </g>
+
+              <!-- Leyenda de la ecuación -->
+              <g>
+                <rect x="50" y="520" width="900" height="60" fill="#1f2937" stroke="#3b82f6" stroke-width="2" rx="8"/>
+                <text x="500" y="545" text-anchor="middle" style="font-size: 18px; font-weight: 600; fill: #f3f4f6; font-family: monospace;">
+                  C₄H₁₀ + 3.5 O₂ → C₄H₂O₃ + 4 H₂O
+                </text>
+                <text x="500" y="565" text-anchor="middle" style="font-size: 12px; fill: #9ca3af;">
+                  Conversión: ${CALC.yields.conversion}% | Selectividad: ${CALC.yields.selectivity}% | Rendimiento Global: ${CALC.yields.overall.toFixed(1)}%
+                </text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">📊 Condiciones de Operación en Tiempo Real</h2>
+          <div class="grid-2">
+            <div class="card">
+              <h3 style="color: #ef4444; margin-bottom: 16px;">🌡️ Control de Temperatura</h3>
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span>Temperatura Actual</span>
+                  <span class="color-danger" style="font-weight: 700; font-family: monospace;" id="temp-value-1">${tempNow.toFixed(1)}°C</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${(tempNow / 500 * 100)}%; background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);"></div>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; color: #9ca3af;">
+                <div>Setpoint: <span class="color-danger" style="font-weight: 600;">${PRODUCTION_DATA.temperature}°C</span></div>
+                <div>Rango: <span>380-460°C</span></div>
+                <div>Alarma Alta: <span class="color-warning" style="font-weight: 600;">450°C</span></div>
+                <div>Alarma Baja: <span class="color-warning" style="font-weight: 600;">390°C</span></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="color: #f59e0b; margin-bottom: 16px;">🔘 Control de Presión</h3>
+              <div style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span>Presión Actual</span>
+                  <span class="color-warning" style="font-weight: 700; font-family: monospace;" id="pressure-value-1">${pressureNow.toFixed(2)} bar</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${(pressureNow / 5 * 100)}%; background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);"></div>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; color: #9ca3af;">
+                <div>Setpoint: <span class="color-warning" style="font-weight: 600;">${PRODUCTION_DATA.pressure} bar</span></div>
+                <div>Rango: <span>1.8-2.4 bar</span></div>
+                <div>Alarma Alta: <span class="color-danger" style="font-weight: 600;">2.5 bar</span></div>
+                <div>Alarma Baja: <span class="color-danger" style="font-weight: 600;">1.7 bar</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">📈 Tendencias de Proceso (últimas 24 horas)</h2>
+          <div class="card">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div style="padding: 16px; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Temperatura Promedio</div>
+                <div style="font-size: 24px; font-weight: 700; color: #ef4444;">${PRODUCTION_DATA.temperature}°C</div>
+                <div style="font-size: 11px; color: #10b981; margin-top: 4px;">▲ Estable</div>
+              </div>
+              <div style="padding: 16px; background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Presión Promedio</div>
+                <div style="font-size: 24px; font-weight: 700; color: #f59e0b;">${PRODUCTION_DATA.pressure} bar</div>
+                <div style="font-size: 11px; color: #10b981; margin-top: 4px;">▲ Estable</div>
+              </div>
+              <div style="padding: 16px; background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Conversión Promedio</div>
+                <div style="font-size: 24px; font-weight: 700; color: #10b981;">${CALC.yields.conversion}%</div>
+                <div style="font-size: 11px; color: #10b981; margin-top: 4px;">▲ Óptimo</div>
+              </div>
+              <div style="padding: 16px; background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; border-radius: 8px;">
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 8px;">Rendimiento Promedio</div>
+                <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">${CALC.yields.overall.toFixed(1)}%</div>
+                <div style="font-size: 11px; color: #10b981; margin-top: 4px;">▲ Óptimo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderEconomics() {
+      return `
+        <div class="section">
+          <h2 class="section-title">💰 Análisis Económico Semanal</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">💵 Ingresos Totales (7 días)</div>
+              <div class="stat-value color-success">${ECONOMICS.revenue.toFixed(2)}<span class="stat-unit">USD</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">≈ $${(ECONOMICS.revenue / 7).toFixed(2)} USD/día</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">💸 Costos Totales (7 días)</div>
+              <div class="stat-value color-danger">${ECONOMICS.costs.total.toFixed(2)}<span class="stat-unit">USD</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">≈ $${(ECONOMICS.costs.total / 7).toFixed(2)} USD/día</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">💰 Beneficio Neto (7 días)</div>
+              <div class="stat-value color-primary">${ECONOMICS.profit.toFixed(2)}<span class="stat-unit">USD</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">≈ $${(ECONOMICS.profit / 7).toFixed(2)} USD/día</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">📈 Margen de Beneficio</div>
+              <div class="stat-value color-success">${ECONOMICS.profitMargin.toFixed(1)}<span class="stat-unit">%</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Constante por período</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">📊 Desglose de Costos</h2>
+          <div class="card">
+            <div class="cost-item" style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b;">
+              <span>⛽ n-Butano</span>
+              <span class="color-warning" style="font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.butane.toFixed(2)}</span>
+            </div>
+            <div class="cost-item" style="background: rgba(6, 182, 212, 0.1); border-left: 4px solid #06b6d4;">
+              <span>💨 Oxígeno</span>
+              <span class="color-secondary" style="font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.oxygen.toFixed(2)}</span>
+            </div>
+            <div class="cost-item" style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444;">
+              <span>⚡ Energía</span>
+              <span class="color-danger" style="font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.energy.toFixed(2)}</span>
+            </div>
+            <div class="cost-item" style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6;">
+              <span>🧪 Catalizador</span>
+              <span style="color: #8b5cf6; font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.catalyst.toFixed(2)}</span>
+            </div>
+            <div class="cost-item" style="background: rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6;">
+              <span>👷 Mano de Obra</span>
+              <span class="color-primary" style="font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.labor.toFixed(2)}</span>
+            </div>
+            <div class="cost-item" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981;">
+              <span>🔧 Mantenimiento</span>
+              <span class="color-success" style="font-weight: 700; font-family: monospace;">$${ECONOMICS.costs.maintenance.toFixed(2)}</span>
+            </div>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #1f2937; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 700; font-size: 15px;">TOTAL</span>
+              <span class="color-primary" style="font-weight: 700; font-size: 18px; font-family: monospace;">$${ECONOMICS.costs.total.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">📈 Métricas de Rentabilidad</h2>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Costo por kg de MA</div>
+              <div class="stat-value color-warning">$${ECONOMICS.costPerKg.toFixed(2)}</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Costo unitario de producción</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Precio de Venta</div>
+              <div class="stat-value color-success">$${ECONOMIC_DATA.maleicAnhydridePrice.toFixed(2)}</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Por kg en el mercado</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Beneficio por kg</div>
+              <div class="stat-value color-primary">$${(ECONOMIC_DATA.maleicAnhydridePrice - ECONOMICS.costPerKg).toFixed(2)}</div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Margen unitario</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">ROI del Batch</div>
+              <div class="stat-value" style="color: #8b5cf6;">${((ECONOMICS.profit / ECONOMICS.costs.total) * 100).toFixed(1)}<span class="stat-unit">%</span></div>
+              <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Retorno sobre inversión</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // INICIALIZACIÓN
+    // ═══════════════════════════════════════════════════════
+
+    document.getElementById('production').innerHTML = renderProduction();
+    document.getElementById('diagram').innerHTML = renderDiagram();
+    document.getElementById('reactor').innerHTML = renderReactor();
+    document.getElementById('quality').innerHTML = renderQuality();
+    document.getElementById('economics').innerHTML = renderEconomics();
+
+    // Actualización en tiempo real para vista de reactor
+    setInterval(() => {
+      const noise = () => (Math.random() - 0.5) * 2;
+      const tempEl = document.getElementById('temp-live');
+      const pressureEl = document.getElementById('pressure-live');
+      const butaneEl = document.getElementById('butane-live');
+      const yieldEl = document.getElementById('yield-live');
+
+      if (tempEl) {
+        tempEl.innerHTML = `${(420 + noise() * 8).toFixed(1)}<span class="stat-unit">°C</span>`;
+        pressureEl.innerHTML = `${(2.1 + noise() * 0.15).toFixed(2)}<span class="stat-unit">bar</span>`;
+        butaneEl.innerHTML = `${(42 + noise() * 3).toFixed(1)}<span class="stat-unit">kg/h</span>`;
+        yieldEl.innerHTML = `${(68 + noise() * 4).toFixed(1)}<span class="stat-unit">%</span>`;
+      }
+
+      // Actualización de los valores del diagrama interactivo
+      const tempNow = 420 + noise() * 8;
+      const pressureNow = 2.1 + noise() * 0.15;
+
+      // Actualizar gauges circulares
+      const tempGaugeValue = document.getElementById('temp-gauge-value');
+      const pressureGaugeValue = document.getElementById('pressure-gauge-value');
+      const tempGauge = document.getElementById('temp-gauge');
+      const pressureGauge = document.getElementById('pressure-gauge');
+
+      if (tempGaugeValue) {
+        tempGaugeValue.textContent = tempNow.toFixed(1);
+        const circumference = 2 * Math.PI * 54;
+        tempGauge.style.strokeDashoffset = circumference * (1 - tempNow / 500);
+      }
+
+      if (pressureGaugeValue) {
+        pressureGaugeValue.textContent = pressureNow.toFixed(2);
+        const circumference = 2 * Math.PI * 54;
+        pressureGauge.style.strokeDashoffset = circumference * (1 - pressureNow / 5);
+      }
+
+      // Actualizar etiquetas en el reactor SVG
+      const reactorTempLabel = document.getElementById('reactor-temp-label');
+      const reactorPressureLabel = document.getElementById('reactor-pressure-label');
+
+      if (reactorTempLabel) {
+        reactorTempLabel.textContent = tempNow.toFixed(0) + '°C';
+      }
+
+      if (reactorPressureLabel) {
+        reactorPressureLabel.textContent = pressureNow.toFixed(2) + ' bar';
+      }
+
+      // Actualizar valores en las tarjetas de control
+      const tempValue1 = document.getElementById('temp-value-1');
+      const pressureValue1 = document.getElementById('pressure-value-1');
+
+      if (tempValue1) {
+        tempValue1.textContent = tempNow.toFixed(1) + '°C';
+      }
+
+      if (pressureValue1) {
+        pressureValue1.textContent = pressureNow.toFixed(2) + ' bar';
+      }
+    }, 2000);
+
+    console.log('✅ Dashboard de Anhídrido Maleico cargado correctamente');
+    console.log('📊 Producción calculada:', CALC);
+    console.log('💰 Análisis económico:', ECONOMICS);
+  </script>
+</body>
+</html>

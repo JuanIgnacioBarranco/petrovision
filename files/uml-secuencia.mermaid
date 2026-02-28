@@ -1,0 +1,56 @@
+---
+title: "Diagrama de Secuencia - Flujo de Monitoreo en Tiempo Real"
+---
+sequenceDiagram
+    participant S as 🌡️ Sensores
+    participant PLC as ⚡ PLC
+    participant OPC as 🔗 OPC-UA
+    participant API as ⚙️ API REST
+    participant DB as 🗄️ TimeSeries DB
+    participant ML as 🧠 ML Engine
+    participant WS as 🔄 WebSocket
+    participant UI as 💻 Dashboard
+
+    Note over S,UI: Ciclo de Adquisición de Datos (cada 5 segundos)
+
+    S->>PLC: Señal analógica (4-20mA)
+    PLC->>PLC: Conversión A/D + Escalado
+    PLC->>OPC: Publicar variables de proceso
+    OPC->>API: Push datos via MQTT
+
+    API->>DB: Almacenar lectura timestamped
+    API->>API: Verificar límites de alarma
+
+    alt Valor fuera de rango
+        API->>WS: Emitir alarma
+        WS->>UI: Notificación tiempo real
+        UI->>UI: Mostrar alerta visual + sonora
+    end
+
+    API->>WS: Broadcast datos actualizados
+    WS->>UI: Actualizar gráficos y KPIs
+
+    Note over S,UI: Ciclo de Predicción (cada lote nuevo)
+
+    API->>ML: Enviar features del lote actual
+    ML->>ML: Ejecutar modelo Random Forest
+    ML->>API: Retornar predicción + confianza
+    API->>DB: Almacenar predicción
+    API->>WS: Broadcast predicción
+    WS->>UI: Actualizar módulo predictivo
+
+    Note over S,UI: Ciclo de Reentrenamiento (periódico)
+
+    DB->>ML: Extraer datos históricos
+    ML->>ML: Reentrenar modelo
+    ML->>ML: Validar métricas (R², MAE)
+
+    alt Métricas mejoran
+        ML->>ML: Promover nuevo modelo
+        ML->>API: Notificar actualización
+        API->>WS: Broadcast versión modelo
+        WS->>UI: Indicar modelo actualizado
+    else Métricas empeoran
+        ML->>ML: Mantener modelo anterior
+        ML->>API: Log de drift detectado
+    end
